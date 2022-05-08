@@ -70,7 +70,7 @@ class RegistrationViewController: UIViewController {
         checkCodeButton.setTitleColor(.systemGray5, for: .selected)
         checkCodeButton.translatesAutoresizingMaskIntoConstraints = false
         checkCodeButton.addTarget(self, action: #selector(inputButtonClicked), for: .touchUpInside)
-        checkCodeButton.addTarget(self, action: #selector(inputButtonTouched), for: .touchDown)
+//        checkCodeButton.addTarget(self, action: #selector(inputButtonTouched), for: .touchDown)
         return checkCodeButton
     } ()
     
@@ -79,7 +79,7 @@ class RegistrationViewController: UIViewController {
         inputButton.setTitle("Register", for: .normal)
         inputButton.setTitleColor(.systemBlue, for: .normal)
         inputButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
-        inputButton.addTarget(self, action: #selector(inputButtonClicked), for: .touchUpInside)
+//        inputButton.addTarget(self, action: #selector(inputButtonClicked), for: .touchUpInside)
         inputButton.translatesAutoresizingMaskIntoConstraints = false
         return inputButton
     } ()
@@ -89,7 +89,7 @@ class RegistrationViewController: UIViewController {
     }
     
     @objc private func inputButtonTouched() {
-        checkCodeButton.backgroundColor = UIColor(named: "forButtonsPressed")
+        checkCodeButton.backgroundColor = .systemGray
     }
     
     private func makeEmailRequest() {
@@ -132,8 +132,8 @@ class RegistrationViewController: UIViewController {
                 titleImage.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
                 titleImage.leadingAnchor.constraint(equalTo: view.leadingAnchor),
                 titleImage.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                titleImage.widthAnchor.constraint(equalToConstant: 150),
-                titleImage.heightAnchor.constraint(equalToConstant: 150),
+                titleImage.widthAnchor.constraint(equalToConstant: 200),
+                titleImage.heightAnchor.constraint(equalToConstant: 200),
                 
                 registrationLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
                 registrationLabel.bottomAnchor.constraint(equalTo: inputTextField.centerYAnchor, constant: -35),

@@ -11,4 +11,8 @@ enum AnswerType {
     case nicknameAlreadyExists
     case userCreateSuccessfully
     case badJSON
+    case cannotAddUser
+    case userAdded
+    case succsess
+    case incorrectNickname
 }

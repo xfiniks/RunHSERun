@@ -1,29 +1,50 @@
 import Foundation
 import UIKit
 
-class SearchScreenController : UIViewController, UITableViewDelegate, UITableViewDataSource {
+protocol ApiSearchFriendsLogic {
+    func updateTable()
+    func showAlert(message : String)
+}
+
+class SearchScreenController : UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
+        ApiManager.shared.searchScreenController = self
         let background = UIImage(named: "background")
         view.layer.masksToBounds = true
         view.layer.contents = background?.cgImage
-        filteredUsers = gameUsers
+//        filteredUsers = gameUsers
         configureUI()
     }
-        
-    let gameUsers : [GameUser] = [GameUser(nickname: "aaaaaaaaaaaaaaa", avatar: UIImage(named: "logo")!), GameUser(nickname: "bbbb", avatar: UIImage(named: "logo")!), GameUser(nickname: "ccccc", avatar: UIImage(named: "logo")!), GameUser(nickname: "ddddd", avatar: UIImage(named: "logo")!)]
     
-    var filteredUsers = [GameUser]() {
-        didSet {
-            tableView.reloadData()
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if touches.first != nil {
+            view.endEditing(true)
         }
+        super.touchesBegan(touches, with: event)
     }
-    private var searchBarIsEmpty : Bool {
-        guard let text = searchBar.text else { return false }
-        return text.isEmpty
+    
+    override func viewWillAppear(_ animated: Bool) {
+        ApiManager.shared.getUsersByPatternRequest(pattern: "")
     }
+    
+//    override func viewWillDisappear(_ animated: Bool) {
+//        ApiManager.shared.searchScreenController = nil
+//    }
+        
+//    let gameUsers : [GameUser] = [GameUser(nickname: "aaaaaaaaaaaaaaa", avatar: UIImage(named: "logo")!), GameUser(nickname: "bbbb", avatar: UIImage(named: "logo")!), GameUser(nickname: "ccccc", avatar: UIImage(named: "logo")!), GameUser(nickname: "ddddd", avatar: UIImage(named: "logo")!)]
+//    
+//    var filteredUsers = [GameUser]() {
+//        didSet {
+//            tableView.reloadData()
+//        }
+//    }
+//    private var searchBarIsEmpty : Bool {
+//        guard let text = searchBar.text else { return false }
+//        return text.isEmpty
+//    }
     
     private lazy var searchBar : UISearchBar = {
         let searchBar = UISearchBar()
@@ -64,20 +85,6 @@ class SearchScreenController : UIViewController, UITableViewDelegate, UITableVie
         return table
     }()
     
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        filteredUsers.count
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: SearchTableCell.indentifier, for: indexPath) as! SearchTableCell
-        cell.configure(data: filteredUsers[indexPath.row])
-        return cell
-    }
-    
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 80
-    }
-    
     private func configureUI() {
         view.addSubview(searchlabel)
         view.addSubview(tableView)
@@ -101,10 +108,42 @@ class SearchScreenController : UIViewController, UITableViewDelegate, UITableVie
     }
 }
 
+extension SearchScreenController : UITableViewDelegate, UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        ApiManager.shared.filteredUsers.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: SearchTableCell.indentifier, for: indexPath) as! SearchTableCell
+        
+        cell.configure(data: ApiManager.shared.filteredUsers[indexPath.row], id : indexPath.row)
+        return cell
+    }
+    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 80
+    }
+}
+
 extension SearchScreenController : UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        filteredUsers = gameUsers.filter({ (user : GameUser) -> Bool in
-            return user.nickname.lowercased().contains(searchText.lowercased())
-        })
+        ApiManager.shared.getUsersByPatternRequest(pattern: searchText)
     }
+}
+
+extension SearchScreenController : ApiSearchFriendsLogic {
+    
+    func showAlert(message: String) {
+            let alert = UIAlertController(title: "We have a problems...", message: message, preferredStyle: UIAlertController.Style.alert)
+        
+            alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: { _ in
+                        
+                    }))
+                self.present(alert, animated: true, completion: nil)
+    }
+    
+    func updateTable() {
+        tableView.reloadData()
+    }
+    
 }

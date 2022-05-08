@@ -18,6 +18,20 @@ class ChooseNicknameViewController : UIViewController {
         super.touchesBegan(touches, with: event)
     }
     
+    private lazy var nicknameFormatLabel : UILabel = {
+        let nicknameFormatLabel = UILabel()
+        nicknameFormatLabel.translatesAutoresizingMaskIntoConstraints = false
+        nicknameFormatLabel.numberOfLines = 4
+        nicknameFormatLabel.text = """
+            Nickname must be no more than 15 characters and consist of letters, numbers and the _ symbol
+        """
+        nicknameFormatLabel.textAlignment = .center
+        nicknameFormatLabel.font = nicknameFormatLabel.font.withSize(15)
+        nicknameFormatLabel.textColor = .systemRed
+        nicknameFormatLabel.isHidden = true
+        return nicknameFormatLabel
+    } ()
+    
     private lazy var chooseNicknameLabel: UILabel = {
         let chooseNicknameLabel = UILabel()
         chooseNicknameLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -84,15 +98,29 @@ class ChooseNicknameViewController : UIViewController {
                         defaults.set(userInfo.user.email, forKey: "Email")
                         defaults.set(userInfo.user.id, forKey: "Id")
                         defaults.set(userInfo.user.nickname, forKey: "Nickname")
-                        let profileGame = GameScreenController()
-//                        self.view.window?.rootViewController
+                        defaults.set(userInfo.user.image, forKey: "ImageId")
+                        
+                        let bar = UITabBarController()
+                        bar.tabBar.unselectedItemTintColor = .systemGray
+                        bar.tabBar.backgroundColor = .systemGray5
+                        let viewControllers = [SearchScreenController(), GameScreenController(), FriendsGameController()]
+                        bar.setViewControllers(viewControllers, animated: true)
+                        let items = bar.tabBar.items!
+                        let images = ["searchTabBarIcon", "gameTabBarIcon", "friendsTabBarIcon"]
+                        let titles = ["Search", "Game", "Friends"]
+                        for i in 0 ..< viewControllers.count {
+                            items[i].image = UIImage(named: images[i])
+                            items[i].title = titles[i]
+                        }
+                        
+                        self.view.window?.rootViewController = bar
                     }
                     
                 case .nicknameAlreadyExists:
                     self.showAlert(message: "Nickname Already Exists")
                     
-                case .badJSON:
-                    self.showAlert(message: "Bad internet connection")
+                case .incorrectNickname:
+                    self.nicknameFormatLabel.isHidden = false
                     
                 default:
                     return
@@ -104,7 +132,7 @@ class ChooseNicknameViewController : UIViewController {
     func showAlert(message: String) {
             let alert = UIAlertController(title: "We have a problems...", message: message, preferredStyle: UIAlertController.Style.alert)
         
-            alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: { _ in
+        alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: { _ in
                         
                     }))
                 self.present(alert, animated: true, completion: nil)
@@ -114,7 +142,8 @@ class ChooseNicknameViewController : UIViewController {
         view.addSubview(setNicknameButton)
         view.addSubview(chooseNicknameLabel)
         view.addSubview(inputTextField)
-        
+        view.addSubview(nicknameFormatLabel)
+            
         NSLayoutConstraint.activate([
             
             chooseNicknameLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -134,6 +163,10 @@ class ChooseNicknameViewController : UIViewController {
             setNicknameButton.widthAnchor.constraint(equalToConstant: 60),
             setNicknameButton.heightAnchor.constraint(equalToConstant: 40),
             
+            nicknameFormatLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            nicknameFormatLabel.topAnchor.constraint(equalTo: inputTextField.bottomAnchor, constant: 30),
+            nicknameFormatLabel.widthAnchor.constraint(equalToConstant: 250),
+            nicknameFormatLabel.heightAnchor.constraint(equalToConstant: 100)
         ])
     }
     

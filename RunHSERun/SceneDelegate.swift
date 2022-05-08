@@ -6,37 +6,64 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+        
+//        resetDefaults()
+        
         guard let windowScene = (scene as? UIWindowScene) else { return }
         let window = UIWindow(windowScene: windowScene)
-//        let defaults = UserDefaults()
-//        resetDefaults()
-//        if let _ = defaults.string(forKey: "Token") {
-//            let nav = UINavigationController(rootViewController: ProfileGameController())
-//            window.rootViewController = nav
-//        } else {
-//            let nav = UINavigationController(rootViewController: RegistrationViewController())
-//            window.rootViewController = nav
-//        }
-        let bar = UITabBarController()
-        bar.tabBar.unselectedItemTintColor = .systemGray
-        bar.tabBar.backgroundColor = .systemGray5
-        let viewControllers = [SearchScreenController(), GameScreenController(), FriendsGameController()]
-        bar.setViewControllers(viewControllers, animated: true)
-        let items = bar.tabBar.items!
-        let images = ["searchTabBarIcon", "gameTabBarIcon", "friendsTabBarIcon"]
-        let titles = ["Search", "Game", "Friends"]
-        for i in 0 ..< viewControllers.count {
-            items[i].image = UIImage(named: images[i])
-            items[i].title = titles[i]
+        let defaults = UserDefaults()
+        if let _ = defaults.string(forKey: "Token") {
+            let bar = UITabBarController()
+            bar.tabBar.unselectedItemTintColor = .systemGray
+            bar.tabBar.backgroundColor = .systemGray5
+            let viewControllers = [SearchScreenController(), GameScreenController(), FriendsGameController()]
+            bar.setViewControllers(viewControllers, animated: true)
+            let items = bar.tabBar.items!
+            let images = ["searchTabBarIcon", "gameTabBarIcon", "friendsTabBarIcon"]
+            let titles = ["Search", "Game", "Friends"]
+            for i in 0 ..< viewControllers.count {
+                items[i].image = UIImage(named: images[i])
+                items[i].title = titles[i]
+            }
+            window.rootViewController = bar
+        } else {
+            let nav = UINavigationController(rootViewController: RegistrationViewController())
+            window.rootViewController = nav
         }
-//        tabBar.tabBar.backgroundColor = UIColor.systemMint
-//        tabBar.tabBar.tintColor = .white
-//        tabBar.tabBar.barTintColor = .darkGray
-        
-//        bar.tabBar.backgroundColor = UIColor(named: "tabBarColor")
-        window.rootViewController = bar
+
         self.window = window
         window.makeKeyAndVisible()
+        
+        
+        
+        
+//        guard let windowScene = (scene as? UIWindowScene) else { return }
+//        let window = UIWindow(windowScene: windowScene)
+//            let bar = UITabBarController()
+//            bar.tabBar.unselectedItemTintColor = .systemGray
+//            bar.tabBar.backgroundColor = .systemGray5
+//            let viewControllers = [SearchScreenController(), GameScreenController(), FriendsGameController()]
+//            bar.setViewControllers(viewControllers, animated: true)
+//            let items = bar.tabBar.items!
+//            let images = ["searchTabBarIcon", "gameTabBarIcon", "friendsTabBarIcon"]
+//            let titles = ["Search", "Game", "Friends"]
+//            for i in 0 ..< viewControllers.count {
+//                items[i].image = UIImage(named: images[i])
+//                items[i].title = titles[i]
+//            }
+        
+//                guard let windowScene = (scene as? UIWindowScene) else { return }
+//                let window = UIWindow(windowScene: windowScene)
+//
+//            let nav = UINavigationController(rootViewController: CoreTestViewController())
+//
+//            window.rootViewController = nav
+//            self.window = window
+//            window.makeKeyAndVisible()
+    }
+    
+    func firstScreen() {
+            
     }
     
     func resetDefaults() {

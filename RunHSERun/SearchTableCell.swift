@@ -1,13 +1,19 @@
 import Foundation
 import UIKit
 
+protocol AddButtonLogic {
+    func userAdded()
+}
+
 final class SearchTableCell : UITableViewCell {
     
     static let indentifier = "SearchTableCell"
     
+    private lazy var id : Int = 0
+    
     private lazy var nickname : UILabel = {
         let nickname = UILabel()
-        nickname.font = UIFont.systemFont(ofSize: 17, weight: .regular)
+        nickname.font = UIFont.systemFont(ofSize: 25, weight: .regular)
         nickname.textAlignment = .left
         nickname.textColor = .darkText
         nickname.translatesAutoresizingMaskIntoConstraints = false
@@ -17,9 +23,9 @@ final class SearchTableCell : UITableViewCell {
     private lazy var avatar : UIImageView = {
         let avatar = UIImageView()
         avatar.contentMode = .scaleAspectFit
-        avatar.layer.cornerRadius = 15
+        avatar.layer.cornerRadius = 30
         avatar.clipsToBounds = true
-        avatar.backgroundColor = .systemBlue
+        avatar.backgroundColor = .white
         avatar.translatesAutoresizingMaskIntoConstraints = false
         return avatar
     } ()
@@ -33,18 +39,18 @@ final class SearchTableCell : UITableViewCell {
         statusButton.layer.masksToBounds = false
         statusButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
         statusButton.setTitle("Add", for: .normal)
-        statusButton.setTitleColor(.systemGray5, for: .selected)
         statusButton.translatesAutoresizingMaskIntoConstraints = false
-        statusButton.addTarget(self, action: #selector(statusButtonClicked), for: .touchUpInside)
+        statusButton.addTarget(self, action: #selector(statusButtonClicked( _ :)), for: .touchUpInside)
         return statusButton
     } ()
     
-    @objc private func statusButtonClicked() {
-        
+    @objc private func statusButtonClicked(_ sender : UIButton) {
+        ApiManager.shared.addFriendRequest(id: id, sender : sender)
     }
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: Self.indentifier)
+        ApiManager.shared.searchController = self
         configureUI()
     }
     
@@ -52,9 +58,10 @@ final class SearchTableCell : UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func configure(data: GameUser) {
+    func configure(data: GameUser, id : Int) {
         avatar.image = data.avatar
         nickname.text = data.nickname
+        self.id = id
     }
     
     private func configureUI() {
@@ -81,6 +88,14 @@ final class SearchTableCell : UITableViewCell {
             statusButton.widthAnchor.constraint(equalToConstant: 60),
             statusButton.heightAnchor.constraint(equalToConstant: 40)
         ])
+    }
+    
+}
+
+extension SearchTableCell : AddButtonLogic {
+    func userAdded() {
+        statusButton.backgroundColor = .systemGray
+        statusButton.isEnabled = false
     }
     
 }

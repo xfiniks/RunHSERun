@@ -1,13 +1,13 @@
 import Foundation
 import UIKit
 
-protocol DeleteButtonLogic {
-    func userDeleted()
+protocol StartButtonLogic {
+    func startGame()
 }
 
-final class FriendsListCell : UITableViewCell {
+final class StartGameWithFriendTableCell : UITableViewCell {
     
-    static let indentifier = "FrindsListCell"
+    static let indentifier = "StartGameWithFriendTableCell"
     
     private lazy var id : Int = 0
     
@@ -30,23 +30,23 @@ final class FriendsListCell : UITableViewCell {
         return avatar
     } ()
     
-    private lazy var statusButton : UIButton = {
-        let statusButton = UIButton(type: .custom)
-        statusButton.backgroundColor = UIColor(named: "forDeleteButton")
-        statusButton.contentHorizontalAlignment = .center
-        statusButton.contentVerticalAlignment = .center
-        statusButton.layer.cornerRadius = 20
-        statusButton.layer.masksToBounds = false
-        statusButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
-        statusButton.setTitle("Delete", for: .normal)
-        statusButton.setTitleColor(.systemGray5, for: .selected)
-        statusButton.translatesAutoresizingMaskIntoConstraints = false
-        statusButton.addTarget(self, action: #selector(statusButtonClicked), for: .touchUpInside)
-        return statusButton
+    private lazy var startButton : UIButton = {
+        let startButton = UIButton(type: .custom)
+        startButton.backgroundColor = .systemBlue
+        startButton.contentHorizontalAlignment = .center
+        startButton.contentVerticalAlignment = .center
+        startButton.layer.cornerRadius = 20
+        startButton.layer.masksToBounds = false
+        startButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
+        startButton.setTitle("Run", for: .normal)
+        startButton.setTitleColor(.systemGray5, for: .selected)
+        startButton.translatesAutoresizingMaskIntoConstraints = false
+        startButton.addTarget(self, action: #selector(statusButtonClicked), for: .touchUpInside)
+        return startButton
     } ()
     
     @objc private func statusButtonClicked() {
-        ApiManager.shared.deleteFriend(id: id)
+        
     }
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -66,7 +66,7 @@ final class FriendsListCell : UITableViewCell {
     
     private func configureUI() {
         contentView.addSubview(nickname)
-        contentView.addSubview(statusButton)
+        contentView.addSubview(startButton)
         contentView.addSubview(avatar)
         
         NSLayoutConstraint.activate([
@@ -80,21 +80,20 @@ final class FriendsListCell : UITableViewCell {
 //            nickname.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 75),
             nickname.heightAnchor.constraint(equalToConstant: 40),
 //            nickname.widthAnchor.constraint(equalToConstant: 150),
-            nickname.trailingAnchor.constraint(equalTo: statusButton.leadingAnchor),
+            nickname.trailingAnchor.constraint(equalTo: startButton.leadingAnchor),
             nickname.leadingAnchor.constraint(equalTo: avatar.trailingAnchor, constant: 15),
             
-            statusButton.centerYAnchor.constraint(equalTo: avatar.centerYAnchor),
-            statusButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            statusButton.widthAnchor.constraint(equalToConstant: 90),
-            statusButton.heightAnchor.constraint(equalToConstant: 40)
+            startButton.centerYAnchor.constraint(equalTo: avatar.centerYAnchor),
+            startButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            startButton.widthAnchor.constraint(equalToConstant: 90),
+            startButton.heightAnchor.constraint(equalToConstant: 40)
         ])
     }
 }
 
-extension FriendsListCell : DeleteButtonLogic {
-    func userDeleted() {
-        statusButton.backgroundColor = .systemGray
-        statusButton.isEnabled = false
+extension StartGameWithFriendTableCell : StartButtonLogic {
+    func startGame() {
+        
     }
     
 }

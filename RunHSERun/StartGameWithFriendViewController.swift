@@ -1,11 +1,6 @@
 import UIKit
 
-protocol ApiFriendsLogic {
-    func showAlert(message : String)
-    func updateTable()
-}
-
-class FriendsGameController : UIViewController {
+class StartGameWithFriendViewController : UIViewController {
  
 override func viewDidLoad() {
         super.viewDidLoad()
@@ -90,7 +85,7 @@ override func viewDidLoad() {
     
 }
 
-extension FriendsGameController : UITableViewDelegate, UITableViewDataSource {
+extension StartGameWithFriendViewController : UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         ApiManager.shared.filteredFriends.count
     }
@@ -105,7 +100,7 @@ extension FriendsGameController : UITableViewDelegate, UITableViewDataSource {
         return 80
     }
 }
-extension FriendsGameController : UISearchBarDelegate {
+extension StartGameWithFriendViewController : UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         var text : String
         if searchText == "" {
@@ -119,7 +114,7 @@ extension FriendsGameController : UISearchBarDelegate {
     }
 }
 
-extension FriendsGameController : ApiFriendsLogic {
+extension StartGameWithFriendViewController : ApiFriendsLogic {
     
     func showAlert(message: String) {
             let alert = UIAlertController(title: "We have a problems...", message: message, preferredStyle: UIAlertController.Style.alert)

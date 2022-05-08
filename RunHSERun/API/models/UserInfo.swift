@@ -15,4 +15,7 @@ struct UserInfo: Codable {
 struct User: Codable {
     let id: Int
     let nickname, email: String
+    let image : Int
 }
+
+typealias Users = [User]

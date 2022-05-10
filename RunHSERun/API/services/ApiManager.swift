@@ -232,7 +232,7 @@ class ApiManager {
     
     var searchController : AddButtonLogic?
     
-    func addFriendRequest(id : Int, sender : UIButton) {
+    func addFriendRequest(id : Int) {
         var request = ApiType.addFriend.request
         let body = AddFriendRequestBody(user_id: filteredUsers[id].id)
         let jsonEncoder = JSONEncoder()
@@ -246,7 +246,6 @@ class ApiManager {
                     if let httpresponce = response as? HTTPURLResponse {
                         switch httpresponce.statusCode {
                             case 201:
-//                                self?.searchController?.userAdded()
                                 self?.getUsersByPatternRequest(pattern: "")
                             case 400:
                                 // JSON
@@ -295,7 +294,6 @@ class ApiManager {
                                 }
                                 self?.users = gameUsers
                                 self?.getfriends()
-//                                self?.filterUsers()
                             } else {
                                 self?.users = []
                                 self?.getfriends()
@@ -338,11 +336,19 @@ class ApiManager {
     
     var filteredFriends : [GameUser] = [] {
         didSet {
+            if friendsGameController != nil {
             friendsGameController?.updateTable()
+                
+            }
+            if StartGameWithFriendViewController != nil {
+                StartGameWithFriendViewController?.updateTable()
+            }
         }
     }
     
     var friendsGameController : ApiFriendsLogic?
+    
+    var StartGameWithFriendViewController : ApiFriendsLogic?
     
     func setFriends() {
         filteredFriends = friends
@@ -353,7 +359,12 @@ class ApiManager {
         let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             DispatchQueue.main.async { [weak self] in
                 if error != nil {
+                    if self?.friendsGameController != nil{
                     self?.friendsGameController?.showAlert(message: "Bad internet connection")
+                    }
+                    if self?.StartGameWithFriendViewController != nil {
+                        self?.StartGameWithFriendViewController?.showAlert(message: "Bad internet connection")
+                    }
                 } else {
                     if let httpresponce = response as? HTTPURLResponse {
                         switch httpresponce.statusCode {
@@ -370,19 +381,40 @@ class ApiManager {
                                     if self?.friendsGameController != nil {
                                         self?.setFriends()
                                     }
+                                    if self?.StartGameWithFriendViewController != nil {
+                                        self?.setFriends()
+                                    }
                                 } else {
                                     self?.friends = []
                                     self?.filterUsers()
                                     if self?.friendsGameController != nil {
                                         self?.setFriends()
                                     }
+                                    if self?.StartGameWithFriendViewController != nil {
+                                        self?.setFriends()
+                                    }
                                 }
                             case 404:
-                                self?.friendsGameController?.showAlert(message: "Bad internet connection")
+                            if self?.friendsGameController != nil{
+                            self?.friendsGameController?.showAlert(message: "Bad internet connection")
+                            }
+                            if self?.StartGameWithFriendViewController != nil {
+                                self?.StartGameWithFriendViewController?.showAlert(message: "Bad internet connection")
+                            }
                             case 500:
-                                self?.friendsGameController?.showAlert(message: "Bad internet connection")
+                            if self?.friendsGameController != nil{
+                            self?.friendsGameController?.showAlert(message: "Bad internet connection")
+                            }
+                            if self?.StartGameWithFriendViewController != nil {
+                                self?.StartGameWithFriendViewController?.showAlert(message: "Bad internet connection")
+                            }
                             default:
-                                self?.friendsGameController?.showAlert(message: "Bad internet connection")
+                            if self?.friendsGameController != nil{
+                            self?.friendsGameController?.showAlert(message: "Bad internet connection")
+                            }
+                            if self?.StartGameWithFriendViewController != nil {
+                                self?.StartGameWithFriendViewController?.showAlert(message: "Bad internet connection")
+                            }
                         }
                     }
                 }
@@ -441,7 +473,7 @@ class ApiManager {
     
     var settingsViewController : SettingsLogic?
     
-    var gameScreenViewController : userSettingsLogic?
+    var gameScreenViewController : UserSettingsLogic?
     
     private func updateNickname(nickname : String) {
         let defaults = UserDefaults()
@@ -482,10 +514,12 @@ class ApiManager {
         task.resume()
     }
     
+    let avatarsCount = 5
+    
     func makeAvatarId() -> Int {
         let defaults = UserDefaults()
         var avatarId = defaults.integer(forKey: "ImageId")
-        if avatarId < 5 {
+        if avatarId < avatarsCount {
             avatarId += 1
         } else {
             avatarId = 1
@@ -521,10 +555,8 @@ class ApiManager {
                                 self?.gameScreenViewController?.changeAvatar(id: avatarId)
                                 self?.changeDefaultsAvatar(id: avatarId)
                             case 400:
-                                // JSON
                             self!.settingsViewController?.showAlert(message: "Bad internet connection")
                             case 500:
-                                // Server mistake
                             self!.settingsViewController?.showAlert(message: "Bad internet connection")
                             default:
                             self!.settingsViewController?.showAlert(message: "Bad internet connection")

@@ -79,7 +79,11 @@ class SearchScreenController : UIViewController {
 //        table.backgroundView = imageView
         table.register(SearchTableCell.self, forCellReuseIdentifier: SearchTableCell.indentifier)
         table.translatesAutoresizingMaskIntoConstraints = false
-        table.sectionHeaderTopPadding = .zero
+        if #available(iOS 15.0, *) {
+            table.sectionHeaderTopPadding = .zero
+        } else {
+            // Fallback on earlier versions
+        }
         table.dataSource = self
         table.delegate = self
         return table

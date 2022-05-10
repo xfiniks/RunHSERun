@@ -45,7 +45,7 @@ final class SearchTableCell : UITableViewCell {
     } ()
     
     @objc private func statusButtonClicked(_ sender : UIButton) {
-        ApiManager.shared.addFriendRequest(id: id, sender : sender)
+        ApiManager.shared.addFriendRequest(id: id)
     }
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {

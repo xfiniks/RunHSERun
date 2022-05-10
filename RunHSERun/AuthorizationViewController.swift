@@ -97,7 +97,7 @@ class AuthorizationViewController: UIViewController {
     
     private lazy var checkCodeButton : UIButton = {
         let checkCodeButton = UIButton(type: .custom)
-        checkCodeButton.backgroundColor = UIColor(named: "forButtons")
+        checkCodeButton.backgroundColor = .systemBlue
         checkCodeButton.contentHorizontalAlignment = .center
         checkCodeButton.contentVerticalAlignment = .center
         checkCodeButton.layer.cornerRadius = 20

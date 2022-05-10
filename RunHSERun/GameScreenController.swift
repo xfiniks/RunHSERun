@@ -1,6 +1,6 @@
 import UIKit
 
-protocol userSettingsLogic {
+protocol UserSettingsLogic {
     func changeNickname(nickname : String)
     func changeAvatar(id : Int)
     func showAlert(message: String)
@@ -59,7 +59,8 @@ class GameScreenController : UIViewController {
     } ()
     
     @objc private func startGameButtonClicked() {
-        
+        let nav = UINavigationController(rootViewController: ActivGameViewController())
+        self.view.window?.rootViewController = nav
     }
     
     private lazy var settingsButton : UIButton = {
@@ -98,7 +99,7 @@ class GameScreenController : UIViewController {
     } ()
     
     @objc private func startGameWithFriendButtonClicked() {
-        
+        present(StartGameWithFriendViewController(), animated: true)
     }
     
     private func configureUI() {
@@ -140,7 +141,7 @@ class GameScreenController : UIViewController {
     
 }
 
-extension GameScreenController : userSettingsLogic {
+extension GameScreenController : UserSettingsLogic {
     
     func showAlert(message: String) {
             let alert = UIAlertController(title: "We have a problems...", message: message, preferredStyle: UIAlertController.Style.alert)

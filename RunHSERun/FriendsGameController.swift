@@ -35,7 +35,11 @@ override func viewDidLoad() {
         let table = UITableView()
         table.register(FriendsListCell.self, forCellReuseIdentifier: FriendsListCell.indentifier)
         table.translatesAutoresizingMaskIntoConstraints = false
-        table.sectionHeaderTopPadding = .zero
+        if #available(iOS 15.0, *) {
+            table.sectionHeaderTopPadding = .zero
+        } else {
+            // Fallback on earlier versions
+        }
         table.dataSource = self
         table.delegate = self
         return table

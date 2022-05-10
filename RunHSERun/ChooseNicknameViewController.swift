@@ -57,7 +57,7 @@ class ChooseNicknameViewController : UIViewController {
     
     private lazy var setNicknameButton : UIButton = {
         let setNicknameButton = UIButton(type: .custom)
-        setNicknameButton.backgroundColor = UIColor(named: "forButtons")
+        setNicknameButton.backgroundColor = .systemBlue
         setNicknameButton.contentHorizontalAlignment = .center
         setNicknameButton.contentVerticalAlignment = .center
         setNicknameButton.layer.cornerRadius = 20

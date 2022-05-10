@@ -6,7 +6,7 @@ override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
         let background = UIImage(named: "background")
-        ApiManager.shared.friendsGameController = self
+        ApiManager.shared.StartGameWithFriendViewController = self
         view.layer.masksToBounds = true
         view.layer.contents = background?.cgImage
         configureUI()
@@ -28,9 +28,13 @@ override func viewDidLoad() {
     
     private lazy var tableView: UITableView = {
         let table = UITableView()
-        table.register(FriendsListCell.self, forCellReuseIdentifier: FriendsListCell.indentifier)
+        table.register(StartGameWithFriendTableCell.self, forCellReuseIdentifier: StartGameWithFriendTableCell.indentifier)
         table.translatesAutoresizingMaskIntoConstraints = false
-        table.sectionHeaderTopPadding = .zero
+        if #available(iOS 15.0, *) {
+            table.sectionHeaderTopPadding = .zero
+        } else {
+            // Fallback on earlier versions
+        }
         table.dataSource = self
         table.delegate = self
         return table
@@ -55,19 +59,45 @@ override func viewDidLoad() {
         friendslabel.translatesAutoresizingMaskIntoConstraints = false
         friendslabel.textColor = .systemBlue
         friendslabel.textAlignment = .center
-        friendslabel.font = friendslabel.font.withSize(30)
+        friendslabel.font = friendslabel.font.withSize(35)
         friendslabel.text = "Friends"
         return friendslabel
     } ()
+    
+    private lazy var exitButton : UIButton = {
+        let exitButton = UIButton(type: .custom)
+        exitButton.backgroundColor = .white
+        var image = UIImage(named: "exit")!.withRenderingMode(.alwaysOriginal)
+        exitButton.setBackgroundImage(image, for: .normal)
+        exitButton.contentHorizontalAlignment = .center
+        exitButton.contentVerticalAlignment = .center
+        exitButton.layer.cornerRadius = 15
+        exitButton.layer.masksToBounds = false
+        exitButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
+        exitButton.setTitleColor(.systemGray5, for: .selected)
+        exitButton.translatesAutoresizingMaskIntoConstraints = false
+        exitButton.addTarget(self, action: #selector(exitButtonClicked), for: .touchUpInside)
+        return exitButton
+    } ()
+    
+    @objc private func exitButtonClicked() {
+        dismiss(animated: true)
+    }
     
     private func configureUI() {
         
         view.addSubview(friendslabel)
         view.addSubview(tableView)
         view.addSubview(searchBar)
+        view.addSubview(exitButton)
         
         NSLayoutConstraint.activate([
-            friendslabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+            exitButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 30),
+            exitButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
+            exitButton.widthAnchor.constraint(equalToConstant: 30),
+            exitButton.heightAnchor.constraint(equalToConstant: 30),
+            
+            friendslabel.topAnchor.constraint(equalTo: exitButton.bottomAnchor, constant: 20),
             friendslabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             friendslabel.widthAnchor.constraint(equalToConstant: 200),
             friendslabel.heightAnchor.constraint(equalToConstant: 40),
@@ -91,7 +121,7 @@ extension StartGameWithFriendViewController : UITableViewDelegate, UITableViewDa
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: FriendsListCell.indentifier, for: indexPath) as! FriendsListCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: StartGameWithFriendTableCell.indentifier, for: indexPath) as! StartGameWithFriendTableCell
         cell.configure(data: ApiManager.shared.filteredFriends[indexPath.row], id: indexPath.row)
         return cell
     }

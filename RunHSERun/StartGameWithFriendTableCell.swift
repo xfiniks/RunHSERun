@@ -30,6 +30,15 @@ final class StartGameWithFriendTableCell : UITableViewCell {
         return avatar
     } ()
     
+    private lazy var timerLabel : UILabel = {
+        let timerLabel = UILabel()
+        timerLabel.translatesAutoresizingMaskIntoConstraints = false
+        timerLabel.textAlignment = .center
+        timerLabel.font = timerLabel.font.withSize(17)
+        timerLabel.textColor = .systemBlue
+        return timerLabel
+    } ()
+    
     private lazy var startButton : UIButton = {
         let startButton = UIButton(type: .custom)
         startButton.backgroundColor = .systemBlue
@@ -41,11 +50,11 @@ final class StartGameWithFriendTableCell : UITableViewCell {
         startButton.setTitle("Run", for: .normal)
         startButton.setTitleColor(.systemGray5, for: .selected)
         startButton.translatesAutoresizingMaskIntoConstraints = false
-        startButton.addTarget(self, action: #selector(statusButtonClicked), for: .touchUpInside)
+        startButton.addTarget(self, action: #selector(startButtonClicked), for: .touchUpInside)
         return startButton
     } ()
     
-    @objc private func statusButtonClicked() {
+    @objc private func startButtonClicked() {
         
     }
     

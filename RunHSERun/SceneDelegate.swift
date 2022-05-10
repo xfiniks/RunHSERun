@@ -28,6 +28,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             window.rootViewController = bar
         } else {
             let nav = UINavigationController(rootViewController: RegistrationViewController())
+//            let nav = UINavigationController(rootViewController: ActivGameViewController())
             window.rootViewController = nav
         }
 

@@ -1,5 +1,6 @@
 import Foundation
 import UIKit
+import CoreMedia
 
 enum ApiType {
     
@@ -13,6 +14,7 @@ enum ApiType {
     case getMe
     case renameUser
     case changeAvatar
+    case getAudiences
     
     var baseURL : String {
         return "http://localhost:8000/"
@@ -54,7 +56,10 @@ enum ApiType {
                 let defaults = UserDefaults()
                 let token = defaults.string(forKey: "Token") ?? ""
                 return ["Authorization" : "Bearer \(token)"]
-            
+            case .getAudiences:
+                let defaults = UserDefaults()
+                let token = defaults.string(forKey: "Token") ?? ""
+                return ["Authorization" : "Bearer \(token)"]
         }
     }
     
@@ -80,6 +85,8 @@ enum ApiType {
             return "api/users/change-nickname"
         case .changeAvatar:
             return "api/users/change-profile-image"
+        case .getAudiences:
+            return "api/game/get-rooms-by-code"
         }
     }
     
@@ -118,6 +125,9 @@ enum ApiType {
                 return request
             case .changeAvatar:
                 request.httpMethod = "PUT"
+                return request
+            case .getAudiences:
+                request.httpMethod = "GET"
                 return request
         }
     }
@@ -250,6 +260,8 @@ class ApiManager {
                             case 400:
                                 // JSON
                                 self?.searchScreenController?.showAlert(message: "Bad internet connection")
+                            case 401:
+                                self?.searchScreenController?.moveToRegistration()
                             case 404:
                                 self?.searchScreenController?.showAlert(message: "Cannot add user")
                             case 500:
@@ -281,7 +293,7 @@ class ApiManager {
         let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             DispatchQueue.main.async {
                 if error != nil {
-                    self!.searchScreenController?.showAlert(message: "Bad internet connection")
+                    self?.searchScreenController?.showAlert(message: "Bad internet connection")
                 } else {
                     if let httpresponce = response as? HTTPURLResponse {
                         switch httpresponce.statusCode {
@@ -298,10 +310,12 @@ class ApiManager {
                                 self?.users = []
                                 self?.getfriends()
                             }
+                            case 401:
+                                self?.searchScreenController?.moveToRegistration()
                             case 404:
-                                self!.searchScreenController?.showAlert(message: "Bad internet connection")
+                                self?.searchScreenController?.showAlert(message: "Bad internet connection")
                             default:
-                                self!.searchScreenController?.showAlert(message: "Bad internet connection")
+                                self?.searchScreenController?.showAlert(message: "Bad internet connection")
                         }
                     }
                 }
@@ -394,6 +408,13 @@ class ApiManager {
                                         self?.setFriends()
                                     }
                                 }
+                            case 401:
+                            if self?.friendsGameController != nil{
+                                self?.friendsGameController?.moveToRegistration()
+                            }
+                            if self?.StartGameWithFriendViewController != nil {
+                                self?.StartGameWithFriendViewController?.moveToRegistration()
+                            }
                             case 404:
                             if self?.friendsGameController != nil{
                             self?.friendsGameController?.showAlert(message: "Bad internet connection")
@@ -449,16 +470,18 @@ class ApiManager {
                     if let httpresponce = response as? HTTPURLResponse {
                         switch httpresponce.statusCode {
                             case 204:
-                                self!.getfriends()
+                                self?.getfriends()
                                 self?.setFriends()
                             case 400:
                                 // JSON
-                                self!.friendsGameController?.showAlert(message: "Bad internet connection")
+                                self?.friendsGameController?.showAlert(message: "Bad internet connection")
+                            case 401:
+                                self?.friendsGameController?.moveToRegistration()
                             case 500:
                                 // Server mistake
-                                self!.friendsGameController?.showAlert(message: "Bad internet connection")
+                                self?.friendsGameController?.showAlert(message: "Bad internet connection")
                             default:
-                                self!.friendsGameController?.showAlert(message: "Bad internet connection")
+                                self?.friendsGameController?.showAlert(message: "Bad internet connection")
                         }
                     }
                 }
@@ -497,15 +520,16 @@ class ApiManager {
                                 self?.gameScreenViewController?.changeNickname(nickname: nickname)
                                 self?.settingsViewController?.showSuccessAlert(message: "Nickname has been modified!")
                                 self?.updateNickname(nickname: nickname)
-                                
+                            case 401:
+                                self?.settingsViewController?.moveToRegistration()
                             case 400:
                                 // невалидный ник
                                 self?.settingsViewController?.showAlert(message: "Incorrect nickname")
                             case 500:
                                 // Server mistake
-                                self!.settingsViewController?.showAlert(message: "Bad internet connection")
+                                self?.settingsViewController?.showAlert(message: "Bad internet connection")
                             default:
-                                self!.settingsViewController?.showAlert(message: "Bad internet connection")
+                                self?.settingsViewController?.showAlert(message: "Bad internet connection")
                         }
                     }
                 }
@@ -555,11 +579,75 @@ class ApiManager {
                                 self?.gameScreenViewController?.changeAvatar(id: avatarId)
                                 self?.changeDefaultsAvatar(id: avatarId)
                             case 400:
-                            self!.settingsViewController?.showAlert(message: "Bad internet connection")
+                                self?.settingsViewController?.showAlert(message: "Bad internet connection")
                             case 500:
-                            self!.settingsViewController?.showAlert(message: "Bad internet connection")
+                                self?.settingsViewController?.showAlert(message: "Bad internet connection")
+                            case 401:
+                                self?.settingsViewController?.moveToRegistration()
                             default:
-                            self!.settingsViewController?.showAlert(message: "Bad internet connection")
+                                self!.settingsViewController?.showAlert(message: "Bad internet connection")
+                        }
+                    }
+                }
+            }
+        }
+        task.resume()
+    }
+    
+    var findAudienceViewController : ApiSearchRoomsLogic?
+    
+    var rooms = Rooms()
+    
+    var filteredRooms : Rooms = [] {
+        didSet {
+            findAudienceViewController?.updateTable()
+        }
+    }
+    
+    func filterRooms(pattern : String) {
+        var newFilteredRooms = Rooms()
+        if pattern == "" {
+            filteredRooms = rooms
+        } else {
+            newFilteredRooms = rooms.filter({ (room : Room) -> Bool in
+                return room.code.lowercased().contains(pattern.lowercased())
+            })
+        }
+        newFilteredRooms.sort(by: {(first, second) -> Bool in
+            if first.code.count == second.code.count {
+                return first.code < second.code
+            }
+            return first.code.count < second.code.count
+        })
+        filteredRooms = newFilteredRooms
+    }
+    
+    func getRoomsByPatternRequest(pattern : String) {
+        var request = ApiType.getAudiences.request
+        var components = URLComponents(url: request.url!, resolvingAgainstBaseURL: true)
+        components?.queryItems = [URLQueryItem(name: "code", value: pattern)]
+        request.url = components?.url
+        let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            DispatchQueue.main.async {
+                if error != nil {
+                    self?.findAudienceViewController?.showAlert(message: "Bad internet connection")
+                } else {
+                    if let httpresponce = response as? HTTPURLResponse {
+                        switch httpresponce.statusCode {
+                            case 200:
+                                let jsonDecoder = JSONDecoder()
+                            if let data = data, let rooms = try? jsonDecoder.decode(Rooms.self, from: data) {
+                                self?.rooms = rooms
+                                self?.filterRooms(pattern: pattern)
+                            } else {
+                                self?.rooms = []
+                            }
+                            case 401:
+                                self?.findAudienceViewController?.moveToRegistration()
+                            case 404:
+                                self?.findAudienceViewController?.showAlert(message: "Bad internet connection")
+                            default:
+                                self?.findAudienceViewController?.showAlert(message: "Bad internet connection")
                         }
                     }
                 }

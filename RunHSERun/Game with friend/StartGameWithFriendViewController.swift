@@ -146,7 +146,9 @@ extension StartGameWithFriendViewController : UISearchBarDelegate {
 
 extension StartGameWithFriendViewController : ApiFriendsLogic {
     func moveToRegistration() {
-        self.view.window?.rootViewController = RegistrationViewController()
+        DispatchQueue.main.async {
+            self.view.window?.rootViewController = RegistrationViewController()
+        }
     }
     
     

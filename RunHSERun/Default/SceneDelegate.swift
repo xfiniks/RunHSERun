@@ -28,10 +28,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             window.rootViewController = bar
         } else {
             let nav = UINavigationController(rootViewController: RegistrationViewController())
+            nav.isNavigationBarHidden = true
 //            let nav = UINavigationController(rootViewController: ActivGameViewController())
             window.rootViewController = nav
         }
-        window.rootViewController = WaitingScreenViewController()
+//        window.rootViewController = FindAudienceViewController()
         self.window = window
         window.makeKeyAndVisible()
     }

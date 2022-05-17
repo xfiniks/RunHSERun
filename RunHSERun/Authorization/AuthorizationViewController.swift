@@ -127,7 +127,7 @@ class AuthorizationViewController: UIViewController {
                 case .userCreate:
                     let chooseNickname = ChooseNicknameViewController()
                     self.navigationController?.setViewControllers([chooseNickname], animated: true)
-//                    self.view.window?.rootViewController = chooseNickname
+                    self.navigationController?.isNavigationBarHidden = true
                 
                 case .userExist:
                     if let userInfo = user {

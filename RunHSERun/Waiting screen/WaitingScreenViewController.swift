@@ -1,6 +1,12 @@
 import Foundation
 import UIKit
 
+protocol ApiWaitingLogic {
+    func moveToMainScreen()
+    func showAlert(message : String)
+    func moveToRegistration()
+}
+
 class WaitingScreenViewController : UIViewController {
     
     override func viewDidLoad() {
@@ -9,9 +15,21 @@ class WaitingScreenViewController : UIViewController {
         let background = UIImage(named: "background")
         view.layer.masksToBounds = true
         view.layer.contents = background?.cgImage
+        ApiManager.shared.waitingScreenController = self
+        setup()
         configureUI()
         setupAuthorizationTimer()
         nextText()
+    }
+    
+    func setup() {
+        WebSocketManager.shared.add(observer: self)
+        WebSocketManager.shared.connect()
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        WebSocketManager.shared.disconnect()
+        WebSocketManager.shared.remove(observer: self)
     }
     
     private lazy var backgroundView : UIView = {
@@ -56,7 +74,7 @@ class WaitingScreenViewController : UIViewController {
     
     var textId : Int = 0
     
-    let texts = ["Did you close the deadlines?", "Can you run faster than baby?", "I will rooting for your opponent...", "Turn around..."]
+    let texts = ["Did you close the deadlines?", "Can you run faster than baby?", "We will be rooting for your opponent...", "Turn around...", "It,s okay to be last"]
     
     private func nextText() {
         if textId == texts.count - 1 {
@@ -99,9 +117,17 @@ class WaitingScreenViewController : UIViewController {
         exitButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
         exitButton.setTitleColor(.systemGray5, for: .selected)
         exitButton.translatesAutoresizingMaskIntoConstraints = false
-//        exitButton.addTarget(self, action: #selector(exitButtonClicked), for: .touchUpInside)
+        exitButton.addTarget(self, action: #selector(exitButtonClicked), for: .touchUpInside)
         return exitButton
     } ()
+    
+    @objc func exitButtonClicked() {
+        if GameParameters.game.opponent != nil {
+            ApiManager.shared.deleteFromQueueWithFriend()
+        } else {
+            ApiManager.shared.deleteFromQueue()
+        }
+    }
 
 
     private lazy var gameLabel : UILabel = {
@@ -150,6 +176,52 @@ class WaitingScreenViewController : UIViewController {
     
 }
 
+extension WaitingScreenViewController : ApiWaitingLogic {
+    func moveToMainScreen() {
+        DispatchQueue.main.async {
+            let mainScreen = GameScreenController()
+            self.navigationController?.setViewControllers([mainScreen], animated: true)
+        }
+    }
+    
+    func showAlert(message: String) {
+        let alert = UIAlertController(title: "We have a problems...", message: message, preferredStyle: UIAlertController.Style.alert)
+        
+        alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: { _ in
+                        
+        }))
+        self.present(alert, animated: true, completion: nil)
+    }
+    
+    func moveToRegistration() {
+        DispatchQueue.main.async {
+            self.view.window?.rootViewController = UINavigationController(rootViewController: RegistrationViewController())
+        }
+    }
+}
+
+extension WaitingScreenViewController : SocketObservable {
+    
+    func didConnect() {
+        print("connect")
+    }
+    
+    func didDisconnect() {
+        print("disconnect")
+    }
+    
+    func handleError(_ error: String) {
+        print(error)
+    }
+    
+    func logSignal(_ signal: String?) {
+            DispatchQueue.main.async {
+                print(signal!)
+            }
+        }
+    
+}
+
 extension UILabel {
     func animate(newText: String, characterDelay: TimeInterval) {
         DispatchQueue.main.async {
@@ -163,16 +235,6 @@ extension UILabel {
         }
     }
 }
-
-//extension UIView {
-//    func fadeTransition(_ duration:CFTimeInterval) {
-//        let animation = CATransition()
-//        animation.timingFunction = CAMediaTimingFunction(name: CAMediaTimingFunctionName.easeInEaseOut)
-//        animation.type = CATransitionType.fade
-//        animation.duration = duration
-//        layer.add(animation, forKey: "kCATransitionFade")
-//    }
-//}
 
 extension UIView {
     func fadeTransition(_ duration:CFTimeInterval) {

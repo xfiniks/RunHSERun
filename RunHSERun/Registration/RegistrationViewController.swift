@@ -102,7 +102,8 @@ class RegistrationViewController: UIViewController {
                 case .correctEmail:
                     let authorization = AuthorizationViewController()
                     self.navigationController?.setViewControllers([authorization], animated: true)
-//                    self.view.window?.rootViewController = authorization
+                    self.navigationController?.isNavigationBarHidden = true
+                    self.view.window?.rootViewController = authorization
                     let defaults = UserDefaults.standard
                     defaults.set(email, forKey: "Email")
                     

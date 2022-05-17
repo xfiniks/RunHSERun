@@ -5,6 +5,7 @@ protocol ApiSearchRoomsLogic {
     func moveToRegistration()
     func updateTable()
     func showAlert(message : String)
+    func openWaitingScreen()
 }
 
 class FindAudienceViewController : UIViewController {
@@ -28,7 +29,7 @@ class FindAudienceViewController : UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         ApiManager.shared.getRoomsByPatternRequest(pattern: "")
-        ApiManager.shared.filteredRooms = ApiManager.shared.rooms
+//        ApiManager.shared.filteredRooms = ApiManager.shared.rooms
     }
     
 
@@ -103,6 +104,7 @@ extension FindAudienceViewController : UITableViewDelegate, UITableViewDataSourc
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         searchBar.text = ApiManager.shared.filteredRooms[indexPath.row].code
+        GameParameters.game.audience = ApiManager.shared.filteredRooms[indexPath.row].id
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -123,13 +125,26 @@ extension FindAudienceViewController : UISearchBarDelegate {
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        print("lol")
+        if GameParameters.game.opponent != nil {
+            ApiManager.shared.putInQueueWithFriend()
+        } else {
+            ApiManager.shared.putInQueue()
+        }
     }
 }
 
 extension FindAudienceViewController : ApiSearchRoomsLogic {
+    func openWaitingScreen() {
+        DispatchQueue.main.async {
+            let waitingScreen = WaitingScreenViewController()
+            self.navigationController?.setViewControllers([waitingScreen], animated: true)
+        }
+    }
+    
     func moveToRegistration() {
+        DispatchQueue.main.async {
         self.view.window?.rootViewController = UINavigationController(rootViewController: RegistrationViewController())
+        }
     }
     
     func showAlert(message: String) {

@@ -11,6 +11,8 @@ final class StartGameWithFriendTableCell : UITableViewCell {
     
     private lazy var id : Int = 0
     
+    private lazy var userId : Int = 0
+    
     private lazy var nickname : UILabel = {
         let nickname = UILabel()
         nickname.font = UIFont.systemFont(ofSize: 25, weight: .regular)
@@ -55,7 +57,11 @@ final class StartGameWithFriendTableCell : UITableViewCell {
     } ()
     
     @objc private func startButtonClicked() {
-        
+        GameParameters.game.opponent = userId
+//        let findAudience = FindAudienceViewController()
+        let nav = UINavigationController(rootViewController: FindAudienceViewController())
+        self.window?.rootViewController = nav
+//        self.window?.rootViewController?.navigationController?.setViewControllers([findAudience], animated: true)
     }
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -71,6 +77,7 @@ final class StartGameWithFriendTableCell : UITableViewCell {
         avatar.image = data.avatar
         nickname.text = data.nickname
         self.id = id
+        self.userId = data.id
     }
     
     private func configureUI() {

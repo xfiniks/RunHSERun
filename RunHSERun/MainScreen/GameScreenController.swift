@@ -60,9 +60,9 @@ class GameScreenController : UIViewController {
     } ()
     
     @objc private func startGameButtonClicked() {
-        let results = ResultsViewController()
-        view.window?.rootViewController = results
-//        self.navigationController?.setViewControllers([results], animated: true)
+        let nav = UINavigationController(rootViewController: FindAudienceViewController())
+        self.view.window?.rootViewController = nav
+        GameParameters.game.opponent = nil
     }
     
     private lazy var exitButton : UIButton = {
@@ -83,7 +83,8 @@ class GameScreenController : UIViewController {
     
     @objc private func exitButtonClicked() {
         let registration = RegistrationViewController()
-        self.navigationController?.setViewControllers([registration], animated: true)
+        self.view.window?.rootViewController = registration
+//        self.navigationController?.setViewControllers([registration], animated: true)
     }
     
     private lazy var settingsButton : UIButton = {

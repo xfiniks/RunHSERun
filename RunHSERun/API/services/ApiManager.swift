@@ -15,9 +15,13 @@ enum ApiType {
     case renameUser
     case changeAvatar
     case getAudiences
+    case putInQueue
+    case putInQueueWithFriend
+    case deleteFromQueue
+    case deleteFromQueueWithFriend
     
     var baseURL : String {
-        return "http://localhost:8000/"
+        return "http://MacBook-Pro-Ivan-2.local:8000/"
     }
     
     var headers : [String : String] {
@@ -60,6 +64,22 @@ enum ApiType {
                 let defaults = UserDefaults()
                 let token = defaults.string(forKey: "Token") ?? ""
                 return ["Authorization" : "Bearer \(token)"]
+            case .putInQueue:
+                let defaults = UserDefaults()
+                let token = defaults.string(forKey: "Token") ?? ""
+                return ["Authorization" : "Bearer \(token)"]
+            case .putInQueueWithFriend:
+                let defaults = UserDefaults()
+                let token = defaults.string(forKey: "Token") ?? ""
+                return ["Authorization" : "Bearer \(token)"]
+            case .deleteFromQueue:
+                let defaults = UserDefaults()
+                let token = defaults.string(forKey: "Token") ?? ""
+                return ["Authorization" : "Bearer \(token)"]
+            case .deleteFromQueueWithFriend:
+                let defaults = UserDefaults()
+                let token = defaults.string(forKey: "Token") ?? ""
+                return ["Authorization" : "Bearer \(token)"]
         }
     }
     
@@ -87,6 +107,14 @@ enum ApiType {
             return "api/users/change-profile-image"
         case .getAudiences:
             return "api/game/get-rooms-by-code"
+        case .putInQueue:
+            return "api/game/put-in-queue"
+        case .putInQueueWithFriend:
+            return "api/game/add-call"
+        case .deleteFromQueue:
+            return "api/game/delete-from-queue"
+        case .deleteFromQueueWithFriend:
+            return "api/game/delete-call"
         }
     }
     
@@ -129,6 +157,18 @@ enum ApiType {
             case .getAudiences:
                 request.httpMethod = "GET"
                 return request
+            case .putInQueue:
+                request.httpMethod = "PUT"
+                return request
+            case .putInQueueWithFriend:
+                request.httpMethod = "PUT"
+                return request
+            case .deleteFromQueue:
+                request.httpMethod = "DELETE"
+                return request
+            case .deleteFromQueueWithFriend:
+                request.httpMethod = "DELETE"
+                return request
         }
     }
 }
@@ -143,6 +183,7 @@ class ApiManager {
         let jsonData = try? JSONSerialization.data(withJSONObject: body)
         request.httpBody = jsonData
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            print(response)
             if error != nil {
                 complition(.badInternet, nil)
             } else {
@@ -585,7 +626,7 @@ class ApiManager {
                             case 401:
                                 self?.settingsViewController?.moveToRegistration()
                             default:
-                                self!.settingsViewController?.showAlert(message: "Bad internet connection")
+                                self?.settingsViewController?.showAlert(message: "Bad internet connection")
                         }
                     }
                 }
@@ -632,22 +673,166 @@ class ApiManager {
                 if error != nil {
                     self?.findAudienceViewController?.showAlert(message: "Bad internet connection")
                 } else {
+                    DispatchQueue.main.async {
+                        if let httpresponce = response as? HTTPURLResponse {
+                            switch httpresponce.statusCode {
+                                case 200:
+                                    let jsonDecoder = JSONDecoder()
+                                if let data = data, let rooms = try? jsonDecoder.decode(Rooms.self, from: data) {
+                                    self?.rooms = rooms
+//                                    self?.filterRooms(pattern: pattern)
+                                } else {
+                                    self?.rooms = []
+                                }
+                                case 401:
+                                    self?.findAudienceViewController?.moveToRegistration()
+                                case 404:
+                                    self?.findAudienceViewController?.showAlert(message: "Bad internet connection")
+                                default:
+                                    self?.findAudienceViewController?.showAlert(message: "Bad internet connection")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        task.resume()
+    }
+    
+    struct putInQueueBody : Codable {
+        let room_id : Int
+    }
+    
+    func putInQueue() {
+        var request = ApiType.putInQueue.request
+        let body = putInQueueBody(room_id: GameParameters.game.audience ?? 0)
+        let jsonEncoder = JSONEncoder()
+        let jsonData = try? jsonEncoder.encode(body)
+        request.httpBody = jsonData
+        let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            if error != nil {
+                self?.findAudienceViewController?.showAlert(message: "Bad internet connection")
+            } else {
+                DispatchQueue.main.async {
                     if let httpresponce = response as? HTTPURLResponse {
                         switch httpresponce.statusCode {
                             case 200:
-                                let jsonDecoder = JSONDecoder()
-                            if let data = data, let rooms = try? jsonDecoder.decode(Rooms.self, from: data) {
-                                self?.rooms = rooms
-                                self?.filterRooms(pattern: pattern)
-                            } else {
-                                self?.rooms = []
-                            }
+                                self?.findAudienceViewController?.openWaitingScreen()
+                            case 500:
+                                self?.findAudienceViewController?.showAlert(message: "Bad internet connection")
                             case 401:
                                 self?.findAudienceViewController?.moveToRegistration()
-                            case 404:
+                            case 400:
                                 self?.findAudienceViewController?.showAlert(message: "Bad internet connection")
                             default:
                                 self?.findAudienceViewController?.showAlert(message: "Bad internet connection")
+                        }
+                    }
+                }
+            }
+        }
+        task.resume()
+    }
+    
+    struct putInQueueWithFriendBody : Codable {
+        let room_id_first : Int
+        let user_id_second : Int
+    }
+    
+    func putInQueueWithFriend() {
+        var request = ApiType.putInQueueWithFriend.request
+        let body = putInQueueWithFriendBody(room_id_first: GameParameters.game.audience ?? 0, user_id_second: GameParameters.game.opponent ?? 0)
+        let jsonEncoder = JSONEncoder()
+        let jsonData = try? jsonEncoder.encode(body)
+        request.httpBody = jsonData
+        let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            if error != nil {
+                self?.findAudienceViewController?.showAlert(message: "Bad internet connection")
+            } else {
+                DispatchQueue.main.async {
+                    if let httpresponce = response as? HTTPURLResponse {
+                        switch httpresponce.statusCode {
+                            case 200:
+                                self?.findAudienceViewController?.openWaitingScreen()
+                            case 201:
+                                self?.findAudienceViewController?.openWaitingScreen()
+                            case 500:
+                                self?.findAudienceViewController?.showAlert(message: "Bad internet connection")
+                            case 404:
+                                self?.findAudienceViewController?.showAlert(message: "Opponent does not exist")
+                            case 401:
+                                self?.findAudienceViewController?.moveToRegistration()
+                            case 400:
+                                self?.findAudienceViewController?.showAlert(message: "Bad internet connection")
+                            default:
+                                self?.findAudienceViewController?.showAlert(message: "Bad internet connection")
+                        }
+                    }
+                }
+            }
+        }
+        task.resume()
+    }
+    
+    var waitingScreenController : ApiWaitingLogic?
+    
+    func deleteFromQueue() {
+        let request = ApiType.deleteFromQueue.request
+        let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            if error != nil {
+                self?.waitingScreenController?.showAlert(message: "Bad internet connection")
+            } else {
+                DispatchQueue.main.async {
+                    if let httpresponce = response as? HTTPURLResponse {
+                        switch httpresponce.statusCode {
+                            case 204:
+                                self?.waitingScreenController?.moveToMainScreen()
+                                GameParameters.game.audience = nil
+                            case 500:
+                                self?.waitingScreenController?.showAlert(message: "Bad internet connection")
+                            case 401:
+                                self?.waitingScreenController?.moveToRegistration()
+                            default:
+                                self?.waitingScreenController?.showAlert(message: "Bad internet connection")
+                        }
+                    }
+                }
+            }
+        }
+        task.resume()
+    }
+    
+    struct deleteFromQueueBody : Codable {
+        let user_id_second : Int
+    }
+    
+    func deleteFromQueueWithFriend() {
+        var request = ApiType.deleteFromQueueWithFriend.request
+        let body = deleteFromQueueBody(user_id_second: GameParameters.game.opponent ?? 0)
+        let jsonEncoder = JSONEncoder()
+        let jsonData = try? jsonEncoder.encode(body)
+        request.httpBody = jsonData
+        let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            if error != nil {
+                self?.waitingScreenController?.showAlert(message: "Bad internet connection")
+            } else {
+                DispatchQueue.main.async {
+                    if let httpresponce = response as? HTTPURLResponse {
+                        switch httpresponce.statusCode {
+                            case 204:
+                                GameParameters.game.opponent = nil
+                                GameParameters.game.audience = nil
+                                self?.waitingScreenController?.moveToMainScreen()
+                            case 500:
+                                self?.waitingScreenController?.showAlert(message: "Bad internet connection")
+                            case 404:
+                                self?.waitingScreenController?.showAlert(message: "Opponent does not exist")
+                            case 401:
+                                self?.waitingScreenController?.moveToRegistration()
+                            case 400:
+                                self?.waitingScreenController?.showAlert(message: "Bad internet connection")
+                            default:
+                                self?.waitingScreenController?.showAlert(message: "Bad internet connection")
                         }
                     }
                 }

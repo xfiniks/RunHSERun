@@ -36,7 +36,7 @@ final class WebSocketManager: NSObject, Observable {
     private var baseURL: String {
         switch self.environment {
         case .debug: return "ws://0.0.0.0:8080/echo"
-        case .master: return "ws://MacBook-Pro-Ivan-2.local:8000/api/upgrade-connection"
+        case .master: return "ws://51.250.104.193:8000/api/upgrade-connection"
         }
     }
     
@@ -52,16 +52,25 @@ final class WebSocketManager: NSObject, Observable {
         self.webSocketTask.resume()
     }
     
-    var needSendPing = false
+    var needSendPing = true
     
     func sendPing() {
         self.webSocketTask.sendPing { (error) in
             if let error = error {
+                self.isConnected = false
+                self.webSocketTask.cancel(with: .goingAway, reason: nil)
+                self.connect()
                 print("Sending PING failed: \(error)")
+                
             }
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
                 if self.needSendPing {
+//                    self.isConnected = false
+                    print("0909")
+//                    self.session = nil
+//                    self.webSocketTask = nil
+//                    self.connect()
                     self.sendPing()
                 }
 //                self.connect()
@@ -89,26 +98,65 @@ final class WebSocketManager: NSObject, Observable {
         self.subscribe()
     }
     
+    func decodeAuditories(_ text : String) {
+        let jsonDecoder = JSONDecoder()
+        let data = text.data(using: .utf8) ?? Data()
+        let inputAuditories = try? jsonDecoder.decode(AudienceStructure.self, from: data)
+        GameParameters.game.audiences = inputAuditories?.rooms
+        GameParameters.game.gameID = inputAuditories?.gameID
+        GameParameters.game.opponentsName = inputAuditories?.nickname
+    }
+    
+    func decodeResults(_ text : String) {
+        let jsonDecoder = JSONDecoder()
+        let data = text.data(using: .utf8) ?? Data()
+        let results = try? jsonDecoder.decode(ResultsStructure.self, from: data)
+        if results?.gameResult == "WIN" {
+            GameParameters.game.gameResult = "You are a winner!"
+        } else if results?.gameResult == "DRAW" {
+            GameParameters.game.gameResult = "You have draw!"
+        } else {
+            GameParameters.game.gameResult = "You lose..."
+        }
+    }
+    
+    var waitingScreen : WebSocketWaitingLogic?
+    
+    func tryConnect() {
+        connect()
+    }
+    
     private func subscribe() {
         self.webSocketTask.receive { [weak self] result in
-            switch result {
-            case .failure(let error):
-                self?.isConnected = false
-//                self?.sendPing()
-                self?.connect()
-                self?.handleError("Failed to receive message: \(error.localizedDescription)")
-            case .success(let message):
-                switch message {
-                case .string(let text):
-                    self?.logSignal("Received text message: \(text)")
-                case .data(let data):
-                    print("Received binary message: \(data)")
-                @unknown default:
-                    fatalError()
+            DispatchQueue.main.async {
+                switch result {
+                case .failure(let error):
+                    self?.isConnected = false
+                    self?.connect()
+    //                self?.sendPing()
+//                    while !(self?.isConnected ?? false) {
+//                        self?.tryConnect()
+//                    }
+                    self?.handleError("Failed to receive message: \(error.localizedDescription)")
+                case .success(let message):
+                    switch message {
+                    case .string(let text):
+                        if text.contains("game_id") {
+                            self?.decodeAuditories(text)
+                            self?.waitingScreen?.moveToGame()
+                        } else {
+                            self?.decodeResults(text)
+                        }
+                        self?.logSignal(text)
+                    case .data(let data):
+                        print("Received binary message: \(data)")
+                    @unknown default:
+                        fatalError()
+                    }
                 }
+                
+                self?.subscribe()
             }
-            
-            self?.subscribe()
         }
     }
     
@@ -134,15 +182,18 @@ final class WebSocketManager: NSObject, Observable {
 
 extension WebSocketManager: URLSessionWebSocketDelegate {
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
-        needSendPing = true
-        sendPing()
+        if needSendPing{
+            sendPing()
+            //needSendPing = false
+        }
+//        sendPing()
         self.isConnected = true
         self.connected()
     }
 
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
         self.isConnected = false
-        needSendPing = false
+        //needSendPing = false
         self.disconnected()
     }
 }

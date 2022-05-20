@@ -7,6 +7,10 @@ protocol ApiWaitingLogic {
     func moveToRegistration()
 }
 
+protocol WebSocketWaitingLogic {
+    func moveToGame()
+}
+
 class WaitingScreenViewController : UIViewController {
     
     override func viewDidLoad() {
@@ -23,12 +27,13 @@ class WaitingScreenViewController : UIViewController {
     }
     
     func setup() {
+        WebSocketManager.shared.waitingScreen = self
         WebSocketManager.shared.add(observer: self)
-        WebSocketManager.shared.connect()
+//        WebSocketManager.shared.connect()
     }
     
     override func viewDidDisappear(_ animated: Bool) {
-        WebSocketManager.shared.disconnect()
+//        WebSocketManager.shared.disconnect()
         WebSocketManager.shared.remove(observer: self)
     }
     
@@ -74,7 +79,7 @@ class WaitingScreenViewController : UIViewController {
     
     var textId : Int = 0
     
-    let texts = ["Did you close the deadlines?", "Can you run faster than baby?", "We will be rooting for your opponent...", "Turn around...", "It,s okay to be last"]
+    let texts = ["Did you close the deadlines?", "Can you run faster than baby?", "We will be rooting for your opponent...", "Turn around...", "It's okay to be last"]
     
     private func nextText() {
         if textId == texts.count - 1 {
@@ -94,8 +99,8 @@ class WaitingScreenViewController : UIViewController {
         if (timeLeft != 0 && timeLeft % 15 == 0) {
             nextText()
         }
-            var minutes = String(timeLeft / 60)
-            var seconds = String(timeLeft % 60)
+        var minutes = String(timeLeft / 60)
+        var seconds = String(timeLeft % 60)
         if (timeLeft / 60 < 10) {
             minutes = "0\(minutes)"
         }
@@ -179,8 +184,20 @@ class WaitingScreenViewController : UIViewController {
 extension WaitingScreenViewController : ApiWaitingLogic {
     func moveToMainScreen() {
         DispatchQueue.main.async {
-            let mainScreen = GameScreenController()
-            self.navigationController?.setViewControllers([mainScreen], animated: true)
+            let bar = UITabBarController()
+            bar.tabBar.unselectedItemTintColor = .systemGray
+            bar.tabBar.backgroundColor = .systemGray5
+            let viewControllers = [SearchScreenController(), GameScreenController(), FriendsGameController()]
+            bar.setViewControllers(viewControllers, animated: true)
+            let items = bar.tabBar.items!
+            let images = ["searchTabBarIcon", "gameTabBarIcon", "friendsTabBarIcon"]
+            let titles = ["Search", "Game", "Friends"]
+            for i in 0 ..< viewControllers.count {
+                items[i].image = UIImage(named: images[i])
+                items[i].title = titles[i]
+            }
+            
+            self.view.window?.rootViewController = bar
         }
     }
     
@@ -195,7 +212,10 @@ extension WaitingScreenViewController : ApiWaitingLogic {
     
     func moveToRegistration() {
         DispatchQueue.main.async {
-            self.view.window?.rootViewController = UINavigationController(rootViewController: RegistrationViewController())
+            let nav = UINavigationController(rootViewController: RegistrationViewController())
+            nav.isNavigationBarHidden = true
+            self.view.window?.rootViewController = nav
+            
         }
     }
 }
@@ -220,6 +240,16 @@ extension WaitingScreenViewController : SocketObservable {
             }
         }
     
+}
+
+extension WaitingScreenViewController : WebSocketWaitingLogic {
+    func moveToGame() {
+        DispatchQueue.main.async {
+            let nav = UINavigationController(rootViewController: ActivGameViewController())
+            nav.isNavigationBarHidden = true
+            self.view.window?.rootViewController = nav
+        }
+    }
 }
 
 extension UILabel {

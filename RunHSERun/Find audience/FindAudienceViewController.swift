@@ -17,7 +17,12 @@ class FindAudienceViewController : UIViewController {
         view.layer.masksToBounds = true
         view.layer.contents = background?.cgImage
         ApiManager.shared.findAudienceViewController = self
+        WebSocketManager.shared.add(observer: self)
         configureUI()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        WebSocketManager.shared.remove(observer: self)
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -125,10 +130,15 @@ extension FindAudienceViewController : UISearchBarDelegate {
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        if GameParameters.game.opponent != nil {
-            ApiManager.shared.putInQueueWithFriend()
+        
+        if ApiManager.shared.filteredRooms.contains(where: { $0.code == searchBar.text }) {
+            if GameParameters.game.opponent != nil {
+                ApiManager.shared.putInQueueWithFriend()
+            } else {
+                ApiManager.shared.putInQueue()
+            }
         } else {
-            ApiManager.shared.putInQueue()
+            showAlert(message: "Wrong audience code")
         }
     }
 }
@@ -143,20 +153,46 @@ extension FindAudienceViewController : ApiSearchRoomsLogic {
     
     func moveToRegistration() {
         DispatchQueue.main.async {
-        self.view.window?.rootViewController = UINavigationController(rootViewController: RegistrationViewController())
+            let nav = UINavigationController(rootViewController: RegistrationViewController())
+            nav.isNavigationBarHidden = true
+            self.view.window?.rootViewController = nav
         }
     }
     
     func showAlert(message: String) {
+        DispatchQueue.main.async {
             let alert = UIAlertController(title: "We have a problems...", message: message, preferredStyle: UIAlertController.Style.alert)
         
             alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: { _ in
                         
                     }))
                 self.present(alert, animated: true, completion: nil)
+        }
     }
     
     func updateTable() {
         tableView.reloadData()
+    }
+}
+
+extension FindAudienceViewController : SocketObservable {
+    func didConnect() {
+        
+    }
+    
+    func didDisconnect() {
+        
+    }
+    
+    func handleError(_ error: String) {
+        
+    }
+    
+    func logSignal(_ signal: String?) {
+        DispatchQueue.main.async { [weak self] in
+            let nav = UINavigationController(rootViewController: ActivGameViewController())
+            nav.isNavigationBarHidden = true
+            self?.view.window?.rootViewController = nav
+        }
     }
 }

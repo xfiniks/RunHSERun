@@ -2,6 +2,14 @@ import Foundation
 import UIKit
 import Vision
 
+protocol ApiActivGameLogic {
+    
+    func showAlert(message: String)
+    func moveToRegistration()
+    func moveToMainScreen()
+    func moveToResults()
+}
+
 class ActivGameViewController : UIViewController {
     
     override func viewDidLoad() {
@@ -11,8 +19,27 @@ class ActivGameViewController : UIViewController {
         view.layer.masksToBounds = true
         view.layer.contents = background?.cgImage
         configureUI()
+        ApiManager.shared.activGameController = self
+        roomIndex = 0
         setupAuthorizationTimer()
+        WebSocketManager.shared.add(observer: self)
+        GameParameters.game.gameResult =  nil
 //        nextText()
+    }
+    
+    private var roomIndex : Int?
+    
+    
+    override func viewWillAppear(_ animated: Bool) {
+        opponentsLabel.text = "Your opponent: \(GameParameters.game.opponentsName ?? "")"
+        auditoryLabel.text = """
+        Audience:
+        \(GameParameters.game.audiences?[roomIndex ?? 0].code ?? "")
+        """
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        WebSocketManager.shared.remove(observer: self)
     }
     
     private lazy var backgroundView : UIView = {
@@ -30,6 +57,17 @@ class ActivGameViewController : UIViewController {
         textLabel.textColor = .systemBlue
         textLabel.numberOfLines = 4
         return textLabel
+    } ()
+    
+    private lazy var opponentsLabel : UILabel = {
+        let opponentsLabel = UILabel()
+        opponentsLabel.translatesAutoresizingMaskIntoConstraints = false
+        opponentsLabel.textAlignment = .center
+//        opponentsLabel.text = ""
+        opponentsLabel.font = opponentsLabel.font.withSize(30)
+        opponentsLabel.textColor = UIColor(named: "forResults")!
+        opponentsLabel.numberOfLines = 2
+        return opponentsLabel
     } ()
     
     private lazy var timerLabel : UILabel = {
@@ -101,7 +139,7 @@ class ActivGameViewController : UIViewController {
     } ()
     
     @objc private func makephotoButtonClicked() {
-        promptPhoto()
+            promptPhoto()
     }
     
     func makeRequest(userCgImage : CGImage) {
@@ -137,8 +175,39 @@ class ActivGameViewController : UIViewController {
     
     func processResults(_ recognizedStrings : [String]) {
         if !recognizedStrings.isEmpty {
+            print(GameParameters.game.audiences!)
             print(recognizedStrings)
+            for number in recognizedStrings {
+                if number == GameParameters.game.audiences?[roomIndex ?? 0].code ?? "0" {
+                    if roomIndex ?? 0 == 2 {
+                        GameParameters.game.gameTime = timeLeft
+                        ApiManager.shared.endGameRequest(exit: false)
+                    } else {
+                        DispatchQueue.main.async { [weak self] in
+                            self?.updateAuditory()
+                        }
+                    }
+                    break
+                }
+            }
+            
+//            if roomIndex ?? 0 == 2 {
+//                GameParameters.game.gameTime = timeLeft
+//                ApiManager.shared.endGameRequest(exit: false)
+//            } else {
+//                DispatchQueue.main.async { [weak self] in
+//                    self?.updateAuditory()
+//                }
+//            }
         }
+    }
+    
+    private func updateAuditory() {
+        roomIndex! += 1
+        auditoryLabel.text = """
+        Audience:
+        \(GameParameters.game.audiences?[roomIndex ?? 0].code ?? "")
+        """
     }
     
     
@@ -154,10 +223,14 @@ class ActivGameViewController : UIViewController {
         exitButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
         exitButton.setTitleColor(.systemGray5, for: .selected)
         exitButton.translatesAutoresizingMaskIntoConstraints = false
-//        exitButton.addTarget(self, action: #selector(exitButtonClicked), for: .touchUpInside)
+        exitButton.addTarget(self, action: #selector(exitButtonClicked), for: .touchUpInside)
         return exitButton
     } ()
 
+    @objc private func exitButtonClicked() {
+        GameParameters.game.gameTime = 1000000
+        ApiManager.shared.endGameRequest(exit: true)
+    }
 
     private lazy var gameLabel : UILabel = {
         let gameLabel = UILabel()
@@ -177,10 +250,10 @@ class ActivGameViewController : UIViewController {
 //        auditoryLabel.font = gameLabel.font.withSize(30)
         auditoryLabel.font = UIFont.systemFont(ofSize: 30, weight: .bold)
         auditoryLabel.numberOfLines = 2
-        auditoryLabel.text = """
-        Audience:
-        N503
-        """
+//        auditoryLabel.text = """
+//        Audience:
+//        N503
+//        """
         return auditoryLabel
     } ()
     
@@ -273,8 +346,9 @@ class ActivGameViewController : UIViewController {
         view.addSubview(makePhotoButton)
         view.addSubview(backgroundView)
         view.addSubview(exitButton)
+        view.addSubview(opponentsLabel)
         backgroundView.addSubview(auditoryLabel)
-        backgroundView.frame = CGRect(x: view.frame.width / 2 - 100, y: view.frame.height / 2 - 50, width: 200, height: 200)
+        backgroundView.frame = CGRect(x: view.frame.width / 2 - 100, y: view.frame.height / 2 - 20, width: 200, height: 200)
         
         NSLayoutConstraint.activate([
 
@@ -283,7 +357,12 @@ class ActivGameViewController : UIViewController {
             gameLabel.widthAnchor.constraint(equalToConstant: 250),
             gameLabel.heightAnchor.constraint(equalToConstant: 40),
             
-            timerLabel.topAnchor.constraint(equalTo: gameLabel.bottomAnchor, constant: 50),
+            opponentsLabel.topAnchor.constraint(equalTo: gameLabel.bottomAnchor, constant: 30),
+            opponentsLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            opponentsLabel.widthAnchor.constraint(equalToConstant: 250),
+            opponentsLabel.heightAnchor.constraint(equalToConstant: 200),
+            
+            timerLabel.topAnchor.constraint(equalTo: backgroundView.bottomAnchor, constant: 15),
             timerLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             timerLabel.widthAnchor.constraint(equalToConstant: 250),
             timerLabel.heightAnchor.constraint(equalToConstant: 100),
@@ -405,4 +484,75 @@ extension ActivGameViewController : UINavigationControllerDelegate {
     
 }
 
+extension ActivGameViewController : ApiActivGameLogic {
+    
+    func moveToResults() {
+        let nav = UINavigationController(rootViewController: ResultsViewController())
+        nav.isNavigationBarHidden = true
+        self.view.window?.rootViewController = nav
+    }
+    
+    
+    func showAlert(message: String) {
+        DispatchQueue.main.async {
+            let alert = UIAlertController(title: "We have a problems...", message: message, preferredStyle: UIAlertController.Style.alert)
+        
+            alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: { _ in
+                        
+                    }))
+                self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
+    func moveToRegistration() {
+        DispatchQueue.main.async {
+            let nav = UINavigationController(rootViewController: RegistrationViewController())
+            nav.isNavigationBarHidden = true
+            self.view.window?.rootViewController = nav
+        }
+    }
+    
+    func moveToMainScreen() {
+        DispatchQueue.main.async {
+            let bar = UITabBarController()
+            bar.tabBar.unselectedItemTintColor = .systemGray
+            bar.tabBar.backgroundColor = .systemGray5
+            let viewControllers = [SearchScreenController(), GameScreenController(), FriendsGameController()]
+            bar.setViewControllers(viewControllers, animated: true)
+            let items = bar.tabBar.items!
+            let images = ["searchTabBarIcon", "gameTabBarIcon", "friendsTabBarIcon"]
+            let titles = ["Search", "Game", "Friends"]
+            for i in 0 ..< viewControllers.count {
+                items[i].image = UIImage(named: images[i])
+                items[i].title = titles[i]
+            }
+            
+            self.view.window?.rootViewController = bar
+        }
+    }
+}
 
+extension ActivGameViewController : SocketObservable {
+    func didConnect() {
+        
+    }
+    
+    func didDisconnect() {
+            
+    }
+    
+    func handleError(_ error: String) {
+        
+    }
+    
+    func logSignal(_ signal: String?) {
+        DispatchQueue.main.async { [weak self] in
+            GameParameters.game.gameTime = self?.timeLeft
+            let nav = UINavigationController(rootViewController: ResultsViewController())
+            nav.isNavigationBarHidden = true
+            self?.view.window?.rootViewController = nav
+        }
+    }
+    
+    
+}

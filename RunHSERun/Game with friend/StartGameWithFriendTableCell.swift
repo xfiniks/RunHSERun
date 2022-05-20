@@ -60,6 +60,7 @@ final class StartGameWithFriendTableCell : UITableViewCell {
         GameParameters.game.opponent = userId
 //        let findAudience = FindAudienceViewController()
         let nav = UINavigationController(rootViewController: FindAudienceViewController())
+        nav.isNavigationBarHidden = true
         self.window?.rootViewController = nav
 //        self.window?.rootViewController?.navigationController?.setViewControllers([findAudience], animated: true)
     }

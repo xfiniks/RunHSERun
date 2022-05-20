@@ -18,6 +18,20 @@ class SearchScreenController : UIViewController {
         view.layer.contents = background?.cgImage
 //        filteredUsers = gameUsers
         configureUI()
+        WebSocketManager.shared.add(observer: self)
+        WebSocketManager.shared.connect()
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        WebSocketManager.shared.remove(observer: self)
+    }
+    
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        if UIDevice.current.userInterfaceIdiom == .phone {
+            return .portrait
+        } else {
+            return .all
+        }
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -154,5 +168,21 @@ extension SearchScreenController : ApiSearchFriendsLogic {
     func updateTable() {
         tableView.reloadData()
     }
+    
+}
+
+extension SearchScreenController : SocketObservable {
+    func didConnect() {
+        
+    }
+    
+    func didDisconnect() {
+        
+    }
+    
+    func handleError(_ error: String) {
+        
+    }
+    
     
 }

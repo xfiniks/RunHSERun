@@ -61,6 +61,7 @@ class GameScreenController : UIViewController {
     
     @objc private func startGameButtonClicked() {
         let nav = UINavigationController(rootViewController: FindAudienceViewController())
+        nav.isNavigationBarHidden = true
         self.view.window?.rootViewController = nav
         GameParameters.game.opponent = nil
     }
@@ -82,8 +83,11 @@ class GameScreenController : UIViewController {
     } ()
     
     @objc private func exitButtonClicked() {
-        let registration = RegistrationViewController()
-        self.view.window?.rootViewController = registration
+        //let registration = RegistrationViewController()
+        //self.view.window?.rootViewController = registration
+        let nav = UINavigationController(rootViewController: RegistrationViewController())
+        nav.isNavigationBarHidden = true
+        self.view.window?.rootViewController = nav
 //        self.navigationController?.setViewControllers([registration], animated: true)
     }
     
@@ -174,7 +178,9 @@ class GameScreenController : UIViewController {
 extension GameScreenController : UserSettingsLogic {
     
     func moveToRegistration() {
-        self.view.window?.rootViewController = UINavigationController(rootViewController: RegistrationViewController())
+        let nav = UINavigationController(rootViewController: RegistrationViewController())
+        nav.isNavigationBarHidden = true
+        self.view.window?.rootViewController = nav
     }
     
     func showAlert(message: String) {

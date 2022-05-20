@@ -19,9 +19,10 @@ enum ApiType {
     case putInQueueWithFriend
     case deleteFromQueue
     case deleteFromQueueWithFriend
+    case endGame
     
     var baseURL : String {
-        return "http://MacBook-Pro-Ivan-2.local:8000/"
+        return "http://51.250.104.193:8000/"
     }
     
     var headers : [String : String] {
@@ -80,6 +81,10 @@ enum ApiType {
                 let defaults = UserDefaults()
                 let token = defaults.string(forKey: "Token") ?? ""
                 return ["Authorization" : "Bearer \(token)"]
+            case .endGame:
+                let defaults = UserDefaults()
+                let token = defaults.string(forKey: "Token") ?? ""
+                return ["Authorization" : "Bearer \(token)"]
         }
     }
     
@@ -115,6 +120,8 @@ enum ApiType {
             return "api/game/delete-from-queue"
         case .deleteFromQueueWithFriend:
             return "api/game/delete-call"
+        case .endGame:
+            return "api/game/send-time"
         }
     }
     
@@ -169,6 +176,9 @@ enum ApiType {
             case .deleteFromQueueWithFriend:
                 request.httpMethod = "DELETE"
                 return request
+            case .endGame:
+                request.httpMethod = "PUT"
+                return request
         }
     }
 }
@@ -183,7 +193,6 @@ class ApiManager {
         let jsonData = try? JSONSerialization.data(withJSONObject: body)
         request.httpBody = jsonData
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            print(response)
             if error != nil {
                 complition(.badInternet, nil)
             } else {
@@ -671,7 +680,9 @@ class ApiManager {
         let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             DispatchQueue.main.async {
                 if error != nil {
-                    self?.findAudienceViewController?.showAlert(message: "Bad internet connection")
+                    DispatchQueue.main.async {
+                        self?.findAudienceViewController?.showAlert(message: "Bad internet connection")
+                    }
                 } else {
                     DispatchQueue.main.async {
                         if let httpresponce = response as? HTTPURLResponse {
@@ -711,7 +722,9 @@ class ApiManager {
         request.httpBody = jsonData
         let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             if error != nil {
-                self?.findAudienceViewController?.showAlert(message: "Bad internet connection")
+                DispatchQueue.main.async {
+                    self?.findAudienceViewController?.showAlert(message: "Bad internet connection")
+                }
             } else {
                 DispatchQueue.main.async {
                     if let httpresponce = response as? HTTPURLResponse {
@@ -747,7 +760,9 @@ class ApiManager {
         request.httpBody = jsonData
         let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             if error != nil {
-                self?.findAudienceViewController?.showAlert(message: "Bad internet connection")
+                DispatchQueue.main.async {
+                    self?.findAudienceViewController?.showAlert(message: "Bad internet connection")
+                }
             } else {
                 DispatchQueue.main.async {
                     if let httpresponce = response as? HTTPURLResponse {
@@ -780,7 +795,9 @@ class ApiManager {
         let request = ApiType.deleteFromQueue.request
         let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             if error != nil {
-                self?.waitingScreenController?.showAlert(message: "Bad internet connection")
+                DispatchQueue.main.async {
+                    self?.waitingScreenController?.showAlert(message: "Bad internet connection")
+                }
             } else {
                 DispatchQueue.main.async {
                     if let httpresponce = response as? HTTPURLResponse {
@@ -814,7 +831,9 @@ class ApiManager {
         request.httpBody = jsonData
         let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             if error != nil {
-                self?.waitingScreenController?.showAlert(message: "Bad internet connection")
+                DispatchQueue.main.async {
+                    self?.waitingScreenController?.showAlert(message: "Bad internet connection")
+                }
             } else {
                 DispatchQueue.main.async {
                     if let httpresponce = response as? HTTPURLResponse {
@@ -833,6 +852,57 @@ class ApiManager {
                                 self?.waitingScreenController?.showAlert(message: "Bad internet connection")
                             default:
                                 self?.waitingScreenController?.showAlert(message: "Bad internet connection")
+                        }
+                    }
+                }
+            }
+        }
+        task.resume()
+    }
+    
+    struct endGameStructure : Codable {
+        let game_id : Int
+        let time : Int
+    }
+    
+    var activGameController : ApiActivGameLogic?
+    
+    func endGameRequest(exit : Bool) {
+        var request = ApiType.endGame.request
+        let body = endGameStructure(game_id: GameParameters.game.gameID ?? 0, time: GameParameters.game.gameTime ?? 0)
+        let jsonEncoder = JSONEncoder()
+        let jsonData = try? jsonEncoder.encode(body)
+        request.httpBody = jsonData
+        let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            if error != nil {
+                DispatchQueue.main.async {
+                    self?.activGameController?.showAlert(message: "Bad internet connection")
+                }
+            } else {
+                DispatchQueue.main.async {
+                    if let httpresponce = response as? HTTPURLResponse {
+                        switch httpresponce.statusCode {
+                            case 200:
+                                if exit {
+                                    self?.activGameController?.moveToMainScreen()
+                                    GameParameters.game.opponent = nil
+                                    GameParameters.game.audience = nil
+                                    GameParameters.game.gameID = nil
+                                    GameParameters.game.opponentsName = nil
+                                    GameParameters.game.gameTime = nil
+                                } else {
+                                    self?.activGameController?.moveToResults()
+                                }
+                            case 500:
+                                self?.activGameController?.showAlert(message: "Bad internet connection")
+                            case 404:
+                                self?.activGameController?.showAlert(message: "Bad internet connection")
+                            case 401:
+                                self?.activGameController?.moveToRegistration()
+                            case 400:
+                                self?.activGameController?.showAlert(message: "Bad internet connection")
+                            default:
+                                self?.activGameController?.showAlert(message: "Bad internet connection")
                         }
                     }
                 }

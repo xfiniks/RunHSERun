@@ -90,6 +90,7 @@ class ChooseNicknameViewController : UIViewController {
                     self.showAlert(message: "Another user already register with your email")
                     let registration = RegistrationViewController()
                     self.navigationController?.setViewControllers([registration], animated: true)
+                    self.navigationController?.isNavigationBarHidden = true
                 
                 case .userCreateSuccessfully:
                     if let userInfo = user {

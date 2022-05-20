@@ -10,6 +10,33 @@ class ResultsViewController : UIViewController {
         view.layer.masksToBounds = true
         view.layer.contents = background?.cgImage
         configureUI()
+        setup()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        if GameParameters.game.gameResult == nil {
+            gameLabel.text = "Waiting for results..."
+        } else {
+            gameLabel.text = GameParameters.game.gameResult
+        }
+        let time = GameParameters.game.gameTime
+        var minutes = String((time ?? 0) / 60)
+        var seconds = String((time ?? 0) % 60)
+        if ((time ?? 0) / 60 < 10) {
+            minutes = "0\(minutes)"
+        }
+        if ((time ?? 0) % 60 < 10) {
+            seconds = "0\(seconds)"
+        }
+        timerLabel.text = "Your time is: \(minutes):\(seconds)"
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        WebSocketManager.shared.remove(observer: self)
+    }
+    
+    func setup() {
+        WebSocketManager.shared.add(observer: self)
     }
     
     private lazy var backgroundView : UIView = {
@@ -33,7 +60,7 @@ class ResultsViewController : UIViewController {
         let timerLabel = UILabel()
         timerLabel.translatesAutoresizingMaskIntoConstraints = false
         timerLabel.textAlignment = .center
-        timerLabel.text = "Your time is: 05:54"
+//        timerLabel.text = "Your time is: 05:54"
         timerLabel.font = timerLabel.font.withSize(30)
         timerLabel.textColor = .systemBlue
         return timerLabel
@@ -52,9 +79,35 @@ class ResultsViewController : UIViewController {
         exitButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
         exitButton.setTitleColor(.systemGray5, for: .selected)
         exitButton.translatesAutoresizingMaskIntoConstraints = false
-//        exitButton.addTarget(self, action: #selector(exitButtonClicked), for: .touchUpInside)
+        exitButton.addTarget(self, action: #selector(exitButtonClicked), for: .touchUpInside)
         return exitButton
     } ()
+    
+    @objc private func exitButtonClicked() {
+        DispatchQueue.main.async {
+            GameParameters.game.opponent = nil
+            GameParameters.game.audience = nil
+            GameParameters.game.gameID = nil
+            GameParameters.game.opponentsName = nil
+            GameParameters.game.gameTime = nil
+            GameParameters.game.gameResult = nil
+            
+            let bar = UITabBarController()
+            bar.tabBar.unselectedItemTintColor = .systemGray
+            bar.tabBar.backgroundColor = .systemGray5
+            let viewControllers = [SearchScreenController(), GameScreenController(), FriendsGameController()]
+            bar.setViewControllers(viewControllers, animated: true)
+            let items = bar.tabBar.items!
+            let images = ["searchTabBarIcon", "gameTabBarIcon", "friendsTabBarIcon"]
+            let titles = ["Search", "Game", "Friends"]
+            for i in 0 ..< viewControllers.count {
+                items[i].image = UIImage(named: images[i])
+                items[i].title = titles[i]
+            }
+            
+            self.view.window?.rootViewController = bar
+        }
+    }
 
 
     private lazy var gameLabel : UILabel = {
@@ -63,7 +116,7 @@ class ResultsViewController : UIViewController {
         gameLabel.textColor = UIColor(named: "forResults")
         gameLabel.textAlignment = .center
         gameLabel.font = gameLabel.font.withSize(40)
-        gameLabel.text = "You are a winner!"
+//        gameLabel.text = "You are a winner!"
         gameLabel.numberOfLines = 2
         return gameLabel
     } ()
@@ -93,6 +146,27 @@ class ResultsViewController : UIViewController {
             exitButton.heightAnchor.constraint(equalToConstant: 35),
 
         ])
+    }
+    
+}
+
+extension ResultsViewController : SocketObservable {
+    func didConnect() {
+        
+    }
+    
+    func didDisconnect() {
+        
+    }
+    
+    func handleError(_ error: String) {
+        
+    }
+    
+    func logSignal(_ signal: String?) {
+        DispatchQueue.main.async { [weak self] in
+            self?.gameLabel.text = GameParameters.game.gameResult
+        }
     }
     
 }

@@ -58,11 +58,9 @@ final class StartGameWithFriendTableCell : UITableViewCell {
     
     @objc private func startButtonClicked() {
         GameParameters.game.opponent = userId
-//        let findAudience = FindAudienceViewController()
         let nav = UINavigationController(rootViewController: FindAudienceViewController())
         nav.isNavigationBarHidden = true
         self.window?.rootViewController = nav
-//        self.window?.rootViewController?.navigationController?.setViewControllers([findAudience], animated: true)
     }
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -94,9 +92,7 @@ final class StartGameWithFriendTableCell : UITableViewCell {
             avatar.heightAnchor.constraint(equalToConstant: 60),
             
             nickname.centerYAnchor.constraint(equalTo: avatar.centerYAnchor),
-//            nickname.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 75),
             nickname.heightAnchor.constraint(equalToConstant: 40),
-//            nickname.widthAnchor.constraint(equalToConstant: 150),
             nickname.trailingAnchor.constraint(equalTo: startButton.leadingAnchor),
             nickname.leadingAnchor.constraint(equalTo: avatar.trailingAnchor, constant: 15),
             

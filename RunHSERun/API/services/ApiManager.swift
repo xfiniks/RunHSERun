@@ -691,7 +691,6 @@ class ApiManager {
                                     let jsonDecoder = JSONDecoder()
                                 if let data = data, let rooms = try? jsonDecoder.decode(Rooms.self, from: data) {
                                     self?.rooms = rooms
-//                                    self?.filterRooms(pattern: pattern)
                                 } else {
                                     self?.rooms = []
                                 }

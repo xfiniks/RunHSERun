@@ -77,9 +77,7 @@ final class FriendsListCell : UITableViewCell {
             avatar.heightAnchor.constraint(equalToConstant: 60),
             
             nickname.centerYAnchor.constraint(equalTo: avatar.centerYAnchor),
-//            nickname.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 75),
             nickname.heightAnchor.constraint(equalToConstant: 40),
-//            nickname.widthAnchor.constraint(equalToConstant: 150),
             nickname.trailingAnchor.constraint(equalTo: statusButton.leadingAnchor),
             nickname.leadingAnchor.constraint(equalTo: avatar.trailingAnchor, constant: 15),
             

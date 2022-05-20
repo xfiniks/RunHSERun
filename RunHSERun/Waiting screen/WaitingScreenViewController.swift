@@ -29,11 +29,9 @@ class WaitingScreenViewController : UIViewController {
     func setup() {
         WebSocketManager.shared.waitingScreen = self
         WebSocketManager.shared.add(observer: self)
-//        WebSocketManager.shared.connect()
     }
     
     override func viewDidDisappear(_ animated: Bool) {
-//        WebSocketManager.shared.disconnect()
         WebSocketManager.shared.remove(observer: self)
     }
     
@@ -83,7 +81,6 @@ class WaitingScreenViewController : UIViewController {
     
     private func nextText() {
         if textId == texts.count - 1 {
-//            textLabel.animate(newText: texts[0], characterDelay: 0.05)
             textLabel.fadeTransition(0.4)
             textLabel.text = texts[0]
             textId = 0
@@ -91,7 +88,6 @@ class WaitingScreenViewController : UIViewController {
             textId += 1
             textLabel.fadeTransition(0.4)
             textLabel.text = texts[textId]
-//            textLabel.animate(newText: texts[textId], characterDelay: 0.05)
         }
     }
     

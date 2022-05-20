@@ -70,7 +70,6 @@ class RegistrationViewController: UIViewController {
         checkCodeButton.setTitleColor(.systemGray5, for: .selected)
         checkCodeButton.translatesAutoresizingMaskIntoConstraints = false
         checkCodeButton.addTarget(self, action: #selector(inputButtonClicked), for: .touchUpInside)
-//        checkCodeButton.addTarget(self, action: #selector(inputButtonTouched), for: .touchDown)
         return checkCodeButton
     } ()
     
@@ -79,7 +78,6 @@ class RegistrationViewController: UIViewController {
         inputButton.setTitle("Register", for: .normal)
         inputButton.setTitleColor(.systemBlue, for: .normal)
         inputButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
-//        inputButton.addTarget(self, action: #selector(inputButtonClicked), for: .touchUpInside)
         inputButton.translatesAutoresizingMaskIntoConstraints = false
         return inputButton
     } ()

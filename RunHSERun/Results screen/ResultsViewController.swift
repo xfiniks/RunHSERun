@@ -60,7 +60,6 @@ class ResultsViewController : UIViewController {
         let timerLabel = UILabel()
         timerLabel.translatesAutoresizingMaskIntoConstraints = false
         timerLabel.textAlignment = .center
-//        timerLabel.text = "Your time is: 05:54"
         timerLabel.font = timerLabel.font.withSize(30)
         timerLabel.textColor = .systemBlue
         return timerLabel
@@ -116,7 +115,6 @@ class ResultsViewController : UIViewController {
         gameLabel.textColor = UIColor(named: "forResults")
         gameLabel.textAlignment = .center
         gameLabel.font = gameLabel.font.withSize(40)
-//        gameLabel.text = "You are a winner!"
         gameLabel.numberOfLines = 2
         return gameLabel
     } ()

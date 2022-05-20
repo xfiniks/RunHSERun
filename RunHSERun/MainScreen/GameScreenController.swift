@@ -83,12 +83,9 @@ class GameScreenController : UIViewController {
     } ()
     
     @objc private func exitButtonClicked() {
-        //let registration = RegistrationViewController()
-        //self.view.window?.rootViewController = registration
         let nav = UINavigationController(rootViewController: RegistrationViewController())
         nav.isNavigationBarHidden = true
         self.view.window?.rootViewController = nav
-//        self.navigationController?.setViewControllers([registration], animated: true)
     }
     
     private lazy var settingsButton : UIButton = {
@@ -100,7 +97,6 @@ class GameScreenController : UIViewController {
         settingsButton.layer.cornerRadius = 20
         settingsButton.layer.masksToBounds = false
         settingsButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
-//        settingsButton.setTitle("Settings", for: .normal)
         settingsButton.setTitleColor(.systemGray5, for: .selected)
         settingsButton.translatesAutoresizingMaskIntoConstraints = false
         settingsButton.addTarget(self, action: #selector(settingsButtonClicked), for: .touchUpInside)
@@ -120,7 +116,6 @@ class GameScreenController : UIViewController {
         startGameWithFriendButton.layer.masksToBounds = false
         startGameWithFriendButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 20)
         startGameWithFriendButton.setTitle("Start game with friend", for: .normal)
-//        startGameWithFriendButton.setTitleColor(.systemGray5, for: .selected)
         startGameWithFriendButton.translatesAutoresizingMaskIntoConstraints = false
         startGameWithFriendButton.addTarget(self, action: #selector(startGameWithFriendButtonClicked), for: .touchUpInside)
         return startGameWithFriendButton

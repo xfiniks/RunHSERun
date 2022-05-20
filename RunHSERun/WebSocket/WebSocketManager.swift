@@ -66,14 +66,8 @@ final class WebSocketManager: NSObject, Observable {
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
                 if self.needSendPing {
-//                    self.isConnected = false
-                    print("0909")
-//                    self.session = nil
-//                    self.webSocketTask = nil
-//                    self.connect()
                     self.sendPing()
                 }
-//                self.connect()
             }
         }
     }
@@ -133,10 +127,6 @@ final class WebSocketManager: NSObject, Observable {
                 case .failure(let error):
                     self?.isConnected = false
                     self?.connect()
-    //                self?.sendPing()
-//                    while !(self?.isConnected ?? false) {
-//                        self?.tryConnect()
-//                    }
                     self?.handleError("Failed to receive message: \(error.localizedDescription)")
                 case .success(let message):
                     switch message {
@@ -184,16 +174,13 @@ extension WebSocketManager: URLSessionWebSocketDelegate {
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
         if needSendPing{
             sendPing()
-            //needSendPing = false
         }
-//        sendPing()
         self.isConnected = true
         self.connected()
     }
 
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
         self.isConnected = false
-        //needSendPing = false
         self.disconnected()
     }
 }

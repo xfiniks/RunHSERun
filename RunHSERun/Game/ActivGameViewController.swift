@@ -24,7 +24,6 @@ class ActivGameViewController : UIViewController {
         setupAuthorizationTimer()
         WebSocketManager.shared.add(observer: self)
         GameParameters.game.gameResult =  nil
-//        nextText()
     }
     
     private var roomIndex : Int?
@@ -63,7 +62,6 @@ class ActivGameViewController : UIViewController {
         let opponentsLabel = UILabel()
         opponentsLabel.translatesAutoresizingMaskIntoConstraints = false
         opponentsLabel.textAlignment = .center
-//        opponentsLabel.text = ""
         opponentsLabel.font = opponentsLabel.font.withSize(30)
         opponentsLabel.textColor = UIColor(named: "forResults")!
         opponentsLabel.numberOfLines = 2
@@ -100,19 +98,14 @@ class ActivGameViewController : UIViewController {
     private func nextText() {
         if textId == texts.count - 1 {
             textLabel.animate(newText: texts[0], characterDelay: 0.05)
-//            textLabel.text = texts[0]
             textId = 0
         } else {
             textId += 1
-//            textLabel.text = texts[1]
             textLabel.animate(newText: texts[textId], characterDelay: 0.05)
         }
     }
     
     private func updateUI() {
-//        if (timeLeft != 0 && timeLeft % 15 == 0) {
-//            nextText()
-//        }
             var minutes = String(timeLeft / 60)
             var seconds = String(timeLeft % 60)
         if (timeLeft / 60 < 10) {
@@ -191,14 +184,6 @@ class ActivGameViewController : UIViewController {
                 }
             }
             
-//            if roomIndex ?? 0 == 2 {
-//                GameParameters.game.gameTime = timeLeft
-//                ApiManager.shared.endGameRequest(exit: false)
-//            } else {
-//                DispatchQueue.main.async { [weak self] in
-//                    self?.updateAuditory()
-//                }
-//            }
         }
     }
     
@@ -247,13 +232,8 @@ class ActivGameViewController : UIViewController {
         auditoryLabel.translatesAutoresizingMaskIntoConstraints = false
         auditoryLabel.textColor = .systemBlue
         auditoryLabel.textAlignment = .center
-//        auditoryLabel.font = gameLabel.font.withSize(30)
         auditoryLabel.font = UIFont.systemFont(ofSize: 30, weight: .bold)
         auditoryLabel.numberOfLines = 2
-//        auditoryLabel.text = """
-//        Audience:
-//        N503
-//        """
         return auditoryLabel
     } ()
     
@@ -341,7 +321,6 @@ class ActivGameViewController : UIViewController {
     
     private func configureUI() {
         view.addSubview(timerLabel)
-//        view.addSubview(textLabel)
         view.addSubview(gameLabel)
         view.addSubview(makePhotoButton)
         view.addSubview(backgroundView)
@@ -367,20 +346,10 @@ class ActivGameViewController : UIViewController {
             timerLabel.widthAnchor.constraint(equalToConstant: 250),
             timerLabel.heightAnchor.constraint(equalToConstant: 100),
             
-//            backgroundView.topAnchor.constraint(equalTo: timerLabel.bottomAnchor, constant: 50),
-//            backgroundView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-//            backgroundView.widthAnchor.constraint(equalToConstant: 250),
-//            backgroundView.heightAnchor.constraint(equalToConstant: 250),
-//            view.layer. = CGRect(x: view.frame.width / 2, y: view.frame.height / 2, width: 200, height: 200),
             auditoryLabel.centerXAnchor.constraint(equalTo: backgroundView.centerXAnchor),
             auditoryLabel.centerYAnchor.constraint(equalTo: backgroundView.centerYAnchor),
             auditoryLabel.heightAnchor.constraint(equalToConstant: 100),
             auditoryLabel.widthAnchor.constraint(equalToConstant: 200),
-            
-//            textLabel.topAnchor.constraint(equalTo: timerLabel.bottomAnchor, constant: 100),
-//            textLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-//            textLabel.widthAnchor.constraint(equalToConstant: 250),
-//            textLabel.heightAnchor.constraint(equalToConstant: 120),
             
             exitButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 0),
             exitButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
@@ -410,20 +379,12 @@ extension ActivGameViewController : UIImagePickerControllerDelegate {
         let originalImage: UIImage = info[UIImagePickerController.InfoKey.originalImage] as! UIImage
         
         let newImage = scaleAndOrient(image: originalImage)
-//        originalImage = scaleAndOrient(image: originalImage)
-        // Display image on screen.
-//        show(originalImage)
-        
-        // Convert from UIImageOrientation to CGImagePropertyOrientation.
-//        let cgOrientation = CGImagePropertyOrientation(originalImage.imageOrientation)
         
         // Fire off request based on URL of chosen photo.
         guard let cgImage = newImage.cgImage else {
             return
         }
         
-//        performVisionRequest(image: cgImage,
-//                             orientation: cgOrientation)
         makeRequest(userCgImage: cgImage)
         // Dismiss the picker to return to original view controller.
         dismiss(animated: true, completion: nil)
@@ -452,31 +413,11 @@ extension ActivGameViewController : UINavigationControllerDelegate {
                                          style: .default,
                                          handler: presentCamera)
         
-//        func presentLibrary(_ _: UIAlertAction) {
-//            imagePicker.sourceType = .photoLibrary
-//            self.present(imagePicker, animated: true)
-//        }
-//
-//        let libraryAction = UIAlertAction(title: "Photo Library",
-//                                          style: .default,
-//                                          handler: presentLibrary)
-//
-//        func presentAlbums(_ _: UIAlertAction) {
-//            imagePicker.sourceType = .savedPhotosAlbum
-//            self.present(imagePicker, animated: true)
-//        }
-//
-//        let albumsAction = UIAlertAction(title: "Saved Albums",
-//                                         style: .default,
-//                                         handler: presentAlbums)
-        
         let cancelAction = UIAlertAction(title: "Cancel",
                                          style: .cancel,
                                          handler: nil)
         
         prompt.addAction(cameraAction)
-//        prompt.addAction(libraryAction)
-//        prompt.addAction(albumsAction)
         prompt.addAction(cancelAction)
         
         self.present(prompt, animated: true, completion: nil)

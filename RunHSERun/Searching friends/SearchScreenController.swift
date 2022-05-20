@@ -16,7 +16,6 @@ class SearchScreenController : UIViewController {
         let background = UIImage(named: "background")
         view.layer.masksToBounds = true
         view.layer.contents = background?.cgImage
-//        filteredUsers = gameUsers
         configureUI()
         WebSocketManager.shared.add(observer: self)
         WebSocketManager.shared.connect()
@@ -45,22 +44,7 @@ class SearchScreenController : UIViewController {
         ApiManager.shared.getUsersByPatternRequest(pattern: "")
     }
     
-//    override func viewWillDisappear(_ animated: Bool) {
-//        ApiManager.shared.searchScreenController = nil
-//    }
-        
-//    let gameUsers : [GameUser] = [GameUser(nickname: "aaaaaaaaaaaaaaa", avatar: UIImage(named: "logo")!), GameUser(nickname: "bbbb", avatar: UIImage(named: "logo")!), GameUser(nickname: "ccccc", avatar: UIImage(named: "logo")!), GameUser(nickname: "ddddd", avatar: UIImage(named: "logo")!)]
-//    
-//    var filteredUsers = [GameUser]() {
-//        didSet {
-//            tableView.reloadData()
-//        }
-//    }
-//    private var searchBarIsEmpty : Bool {
-//        guard let text = searchBar.text else { return false }
-//        return text.isEmpty
-//    }
-    
+
     private lazy var searchBar : UISearchBar = {
         let searchBar = UISearchBar()
         searchBar.delegate = self
@@ -89,9 +73,6 @@ class SearchScreenController : UIViewController {
     
     private lazy var tableView: UITableView = {
         let table = UITableView()
-//        let image = UIImage(named: "background")
-//        let imageView = UIImageView(image: image)
-//        table.backgroundView = imageView
         table.register(SearchTableCell.self, forCellReuseIdentifier: SearchTableCell.indentifier)
         table.translatesAutoresizingMaskIntoConstraints = false
         if #available(iOS 15.0, *) {

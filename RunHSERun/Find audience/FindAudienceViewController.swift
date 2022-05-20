@@ -34,7 +34,6 @@ class FindAudienceViewController : UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         ApiManager.shared.getRoomsByPatternRequest(pattern: "")
-//        ApiManager.shared.filteredRooms = ApiManager.shared.rooms
     }
     
 
